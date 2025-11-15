@@ -1,0 +1,298 @@
+/* Agenda Page Styles */
+.agenda-page {
+  padding-top: 0;
+  margin-top: 0;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero Section */
+.agenda-hero {
+  background: linear-gradient(rgba(26, 86, 219, 0.9), rgba(26, 86, 219, 0.8)), url('/images/hero-bg.jpg') no-repeat center center/cover;
+  color: white;
+  padding: 120px 0 80px;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.agenda-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 25%),
+    radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 25%);
+  opacity: 0.5;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.agenda-hero .container {
+  position: relative;
+  z-index: 2;
+}
+
+.agenda-hero h1 {
+  font-size: 2.8rem;
+  margin: 0 0 1.5rem 0;
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: #ffffff !important;
+}
+
+.agenda-hero p {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  margin: 0 auto;
+  max-width: 600px;
+  line-height: 1.6;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.agenda-hero p {
+  font-size: 1.25rem;
+  opacity: 0.9;
+}
+
+/* Agenda Grid */
+.agenda-grid-section {
+  padding: 3rem 1.5rem 5rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex: 1;
+}
+
+.agenda-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  padding: 1rem 0;
+}
+
+.agenda-card {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.agenda-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.agenda-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.agenda-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.agenda-card:hover .agenda-image img {
+  transform: scale(1.05);
+}
+
+.agenda-date {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(30, 64, 175, 0.9);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.agenda-date .day {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.agenda-date .month {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.agenda-content {
+  padding: 1.5rem;
+}
+
+.agenda-content h3 {
+  color: #1e3a8a; /* biru gelap agar kontras di atas kartu putih */
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.agenda-meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #334155; /* slate */
+}
+
+.agenda-meta i {
+  margin-right: 5px;
+  color: #1e40af; /* biru */
+}
+
+.agenda-content p {
+  color: #475569; /* slate lebih gelap untuk paragraf */
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.btn-detail {
+  display: inline-flex;
+  align-items: center;
+  color: #1e40af; /* biru */
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  border: 1px solid #1e40af;
+  padding: 6px 14px;
+  border-radius: 6px;
+}
+
+.btn-detail i {
+  margin-left: 5px;
+  transition: transform 0.3s ease;
+}
+
+.btn-detail:hover {
+  color: #ffffff;
+  background-color: #1e40af;
+}
+
+.btn-detail:hover i {
+  transform: translateX(5px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .agenda-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===== Decorative + Animation (CSS-only) ===== */
+/* Dotted pattern lembut di belakang grid */
+.agenda-grid-section { position: relative; }
+.agenda-grid-section::before {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(980px, 94%);
+  height: 110px;
+  background-image: radial-gradient(rgba(30,64,175,.16) 1.2px, transparent 1.2px);
+  background-size: 16px 16px;
+  opacity: .25;
+  pointer-events: none;
+  border-radius: 16px;
+}
+
+/* Kartu: aksen sudut + animasi masuk */
+.agenda-card {
+  position: relative;
+  animation: agendaFadeUp .6s ease both;
+}
+
+.agenda-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(99,102,241,.08));
+  border-bottom-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+/* shimmer halus saat hover */
+.agenda-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
+  transform: skewX(-15deg);
+  opacity: 0;
+}
+
+.agenda-card:hover::after { animation: shimmerA 1100ms ease; }
+
+/* delay bertahap */
+.agenda-grid .agenda-card:nth-child(1) { animation-delay: .05s; }
+.agenda-grid .agenda-card:nth-child(2) { animation-delay: .12s; }
+.agenda-grid .agenda-card:nth-child(3) { animation-delay: .19s; }
+.agenda-grid .agenda-card:nth-child(4) { animation-delay: .26s; }
+.agenda-grid .agenda-card:nth-child(5) { animation-delay: .33s; }
+.agenda-grid .agenda-card:nth-child(6) { animation-delay: .40s; }
+
+@keyframes agendaFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmerA {
+  0% { left: -40%; opacity: 0; }
+  10% { opacity: .6; }
+  100% { left: 140%; opacity: 0; }
+}
+
+@media (max-width: 768px) {
+  .agenda-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .agenda-hero p {
+    font-size: 1.1rem;
+  }
+  
+  .agenda-grid {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .agenda-hero {
+    padding: 80px 0;
+  }
+  
+  .agenda-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .agenda-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

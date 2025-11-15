@@ -1,0 +1,23 @@
+.tambah-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.tambah-form .form-group { margin-bottom: 0.6rem; }
+.tambah-form .form-label { font-weight: 600; color: #0f172a; margin-bottom: 0.35rem; }
+.tambah-form .form-input, .tambah-form .form-textarea, .tambah-form select {
+  width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; background: #fff; font-size: 0.95rem; color: #111827; transition: box-shadow .2s ease, border-color .2s ease;
+}
+.tambah-form .form-input:focus, .tambah-form .form-textarea:focus, .tambah-form select:focus {
+  outline: none; border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+}
+
+/* File upload */
+.tambah-form .file-upload { display:block; }
+.tambah-form .file-upload-label { display:block; border: 1px dashed #c7d2fe; border-radius: 12px; background: #ffffff; padding: 14px; cursor:pointer; text-align:center; }
+.tambah-form .file-upload-content { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.tambah-form .file-upload-preview { width: 100%; max-width: 280px; height:auto; border-radius: 10px; box-shadow: 0 6px 18px rgba(2,6,23,.08); }
+.tambah-form .file-upload-name { font-size: .85rem; color: #475569; }
+
+.tambah-form .modal-footer { display:flex; gap:.5rem; justify-content:flex-end; padding-top:.5rem; }

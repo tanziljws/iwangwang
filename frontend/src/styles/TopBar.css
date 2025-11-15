@@ -1,0 +1,191 @@
+/* Top Bar Styles */
+.top-bar {
+  background-color: #1a56db;
+  color: white;
+  padding: 0;
+  margin: 0;
+  font-size: 1.1rem;
+  position: relative;
+  width: 100%;
+  z-index: 1001; /* Pastikan di atas navbar */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.top-bar-container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 60px;
+  height: 50px;
+  box-sizing: border-box;
+}
+
+.top-bar-info {
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.info-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.info-icon {
+  color: white;
+  opacity: 0.8;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  margin-top: -1px;
+}
+
+.info-link {
+  color: white !important;
+  text-decoration: none !important;
+  transition: opacity 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.info-link:hover,
+.info-link:focus,
+.info-link:active,
+.info-link:visited {
+  color: white !important;
+  text-decoration: underline !important;
+  opacity: 0.9 !important;
+  outline: none !important;
+}
+
+/* Add a subtle background on active state for better feedback */
+.info-link:active {
+  opacity: 0.8 !important;
+  text-decoration: underline !important;
+}
+
+/* Remove default link styles */
+a.info-link,
+a.info-link:hover,
+a.info-link:focus,
+a.info-link:active,
+a.info-link:visited {
+  color: white !important;
+  background-color: transparent !important;
+}
+
+.top-bar-social {
+  display: flex;
+  gap: 20px;
+  margin: 0;
+}
+
+.social-icon {
+  color: white !important;
+  font-size: 0.7em;
+  transition: transform 0.2s ease, opacity 0.2s ease !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: none !important;
+  border: none;
+  opacity: 0.9;
+  padding: 0;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.social-icon:hover,
+.social-icon:focus,
+.social-icon:active,
+.social-icon:visited,
+.social-icon:link {
+  color: white !important;
+  opacity: 1 !important;
+  background: none !important;
+  text-decoration: none !important;
+  outline: none !important;
+}
+
+/* Target the SVG directly */
+.social-icon svg {
+  fill: white !important;
+  color: white !important;
+  stroke: white !important;
+}
+
+/* Override any potential parent styles */
+.social-icon * {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Remove any box shadow or outline on focus */
+.social-icon:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Active state */
+.social-icon:active {
+  transform: translateY(1px) !important;
+  opacity: 0.9 !important;
+}
+
+/* Navbar adjustment */
+.navbar {
+  position: relative;
+  top: 0 !important;
+  border-top: none;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .top-bar {
+    padding: 3px 0;
+    font-size: 0.7rem;
+  }
+  
+  .top-bar-info {
+    gap: 12px;
+  }
+  
+  /* KEEP text beside icon on mobile */
+  .top-bar .info-item span { display: inline !important; }
+  .top-bar .info-text { display: inline-flex; align-items: center; gap: 6px; }
+  .info-text span, .info-text a { display: inline; white-space: nowrap; }
+  .top-bar .info-item { display: flex; align-items: center; gap: 6px; }
+  
+  .info-item i {
+    font-size: 1em;
+  }
+  
+  .top-bar-social {
+    gap: 10px;
+  }
+  
+  .social-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 0.8em;
+  }
+}
