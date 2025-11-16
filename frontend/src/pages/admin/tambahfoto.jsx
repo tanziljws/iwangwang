@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './tambahfoto.css';
 const TambahFoto = ({ loadGaleri, galeriOptions = [], onSubmit, onCancel }) => {
   const [form, setForm] = useState({ galeri_id: '', judul: '', deskripsi: '', file: null });
   const [saving, setSaving] = useState(false);
   const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api').replace(/\/$/, '');
   const [internalGaleri, setInternalGaleri] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const ensure = async () => {
@@ -44,7 +46,7 @@ const TambahFoto = ({ loadGaleri, galeriOptions = [], onSubmit, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="tambah-form">
       <div className="form-group">
         <label className="form-label">Pilih Galeri</label>
         <div className="input-group">
@@ -91,7 +93,16 @@ const TambahFoto = ({ loadGaleri, galeriOptions = [], onSubmit, onCancel }) => {
       </div>
 
       <div className="modal-footer">
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>Batal</button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => {
+            onCancel?.();
+            navigate('/admin/dashboard');
+          }}
+        >
+          Kembali
+        </button>
         <button type="submit" className="btn btn-primary" disabled={saving || !form.galeri_id || !form.file}>
           {saving ? 'Mengunggah...' : 'Simpan Foto'}
         </button>

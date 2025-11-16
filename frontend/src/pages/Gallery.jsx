@@ -1,16 +1,25 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Gallery.css';
 import '../styles/Home.css';
 
 const Gallery = () => {
   const [active, setActive] = React.useState('Semua');
-  const [modal, setModal] = React.useState(null);
+  const [selected, setSelected] = React.useState(null); // viewer di bawah grid, bukan modal full-screen
   const [items, setItems] = React.useState([]);
   const [categories, setCategories] = React.useState(['Semua']);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
+  const [likeCount, setLikeCount] = React.useState(0);
+  const [likeBusy, setLikeBusy] = React.useState(false);
+  const [liked, setLiked] = React.useState(false);
+  const [comments, setComments] = React.useState([]);
+  const [commentText, setCommentText] = React.useState('');
+  const [commentBusy, setCommentBusy] = React.useState(false);
+  const commentInputRef = React.useRef(null);
 
   const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api').replace(/\/$/, '');
+  const navigate = (typeof window !== 'undefined') ? useNavigate() : () => {};
   const ORIGIN_BASE = React.useMemo(() => API_BASE.replace(/\/api\/?$/, ''), [API_BASE]);
   const ASSET_ORIGIN = (import.meta?.env?.VITE_ASSET_ORIGIN || '').replace(/\/$/, '');
 
@@ -18,12 +27,20 @@ const Gallery = () => {
     if (!filename) return [];
     const frontOrigin = typeof window !== 'undefined' ? window.location.origin.replace(/\/$/, '') : '';
     const cands = [];
+
+    // 1) Utamakan route /media yang sudah didefinisikan di web.php
+    cands.push(`${ORIGIN_BASE}/media/foto/${filename}`);
+    if (frontOrigin) cands.push(`${frontOrigin}/media/foto/${filename}`);
+
+    // 2) Fallback ke /storage bila /media tidak ada / tidak aktif
     if (ASSET_ORIGIN) cands.push(`${ASSET_ORIGIN}/storage/foto/${filename}`);
     cands.push(`${ORIGIN_BASE}/storage/foto/${filename}`);
     if (frontOrigin) cands.push(`${frontOrigin}/storage/foto/${filename}`);
-    // Common XAMPP paths when Laravel runs under /backend/public
+
+    // 3) Fallback tambahan umum (misal Laravel di subfolder backend/public)
     if (frontOrigin) cands.push(`${frontOrigin}/backend/public/storage/foto/${filename}`);
     cands.push(`/storage/foto/${filename}`);
+
     return Array.from(new Set(cands));
   }, [ASSET_ORIGIN, ORIGIN_BASE]);
 
@@ -47,7 +64,9 @@ const Gallery = () => {
           (g?.foto || []).forEach((f) => {
             if (f?.status === 0) return; // skip inactive photo
             cats.add(catName);
-            const alts = buildSrcCandidates(f.file);
+            const version = f.updated_at || g.updated_at || g.created_at || '';
+            const filenameWithVersion = version ? `${f.file}?v=${encodeURIComponent(version)}` : f.file;
+            const alts = buildSrcCandidates(filenameWithVersion);
             photos.push({
               id: f.id,
               title: f.judul || g.nama || 'Foto',
@@ -81,6 +100,136 @@ const Gallery = () => {
       e.currentTarget.src = next;
     }
   }, []);
+
+  // Helpers for auth header (pakai userToken agar tidak bentrok dengan admin)
+  const authHeaders = React.useCallback(() => {
+    const token = localStorage.getItem('userToken');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, []);
+
+  // Load likes count & comments when a photo is selected
+  React.useEffect(() => {
+    if (!selected) return;
+    let mounted = true;
+    (async () => {
+      // reset local states when change selected
+      setLiked(false);
+      try {
+        // like count (public di kode backend butuh auth, maka kirim token jika ada)
+        const likeRes = await fetch(`${API_BASE}/foto/${selected.id}/likes/count`, {
+          headers: { 'Accept': 'application/json', ...authHeaders() }
+        });
+        if (likeRes.ok) {
+          const likeData = await likeRes.json();
+          if (mounted) setLikeCount(likeData?.count ?? 0);
+        } else {
+          if (mounted) setLikeCount(0);
+        }
+      } catch (_) { setLikeCount(0); }
+
+      try {
+        const cRes = await fetch(`${API_BASE}/foto/${selected.id}/comments`, {
+          headers: { 'Accept': 'application/json', ...authHeaders() }
+        });
+        if (cRes.ok) {
+          const cData = await cRes.json();
+          if (mounted) setComments(Array.isArray(cData) ? cData : []);
+        } else {
+          if (mounted) setComments([]);
+        }
+      } catch (_) { setComments([]); }
+    })();
+    return () => { mounted = false; };
+  }, [API_BASE, selected, authHeaders]);
+
+  const requireLogin = () => {
+    const token = localStorage.getItem('userToken');
+    if (!token) {
+      alert('Silakan login terlebih dahulu untuk melakukan aksi ini.');
+      try { navigate('/login'); } catch (e) {}
+      return false;
+    }
+    return true;
+  };
+
+  const onToggleLike = async () => {
+    if (!selected) return;
+    if (!requireLogin()) return;
+    setLikeBusy(true);
+    try {
+      const res = await fetch(`${API_BASE}/foto/${selected.id}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...authHeaders() },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        if (typeof data.count === 'number') setLikeCount(data.count);
+        if (data.status === 'liked') setLiked(true);
+        if (data.status === 'unliked') setLiked(false);
+      } else {
+        alert(data?.message || 'Gagal mengubah like');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Terjadi kesalahan');
+    } finally {
+      setLikeBusy(false);
+    }
+  };
+
+  const onSendComment = async (e) => {
+    e?.preventDefault?.();
+    if (!selected) return;
+    if (!requireLogin()) return;
+    if (!commentText.trim()) return;
+    setCommentBusy(true);
+    try {
+      const res = await fetch(`${API_BASE}/foto/${selected.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ body: commentText.trim() })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setComments((prev) => [data, ...prev]);
+        setCommentText('');
+      } else {
+        alert(data?.message || 'Gagal mengirim komentar');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Terjadi kesalahan');
+    } finally {
+      setCommentBusy(false);
+    }
+  };
+
+  const onDownload = async () => {
+    if (!selected) return;
+    if (!requireLogin()) return;
+    try {
+      const res = await fetch(`${API_BASE}/foto/${selected.id}/download`, {
+        headers: { ...authHeaders() }
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data?.message || 'Gagal mengunduh file');
+        return;
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (selected.title || 'foto') + '.jpg';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error(e);
+      alert('Terjadi kesalahan saat mengunduh');
+    }
+  };
 
   return (
     <div className="gallery-page">
@@ -128,7 +277,7 @@ const Gallery = () => {
                 type="button"
                 className="gallery-item fadein"
                 style={{ ['--stagger'] : idx }}
-                onClick={() => setModal(img)}
+                onClick={() => setSelected(img)}
                 aria-label={`Buka foto ${img.title}`}
               >
                 <img src={img.src} alt={img.title} loading="lazy" onError={(e)=>handleImgError(e, img)} />
@@ -142,17 +291,92 @@ const Gallery = () => {
         </div>
       )}
 
-      {modal && (
-        <div className="modal" role="dialog" aria-modal="true" aria-label={modal.title} onClick={() => setModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close" aria-label="Tutup" onClick={() => setModal(null)}>×</button>
-            <img src={modal.src} alt={modal.title} />
-            <div className="modal-info">
-              <h2>{modal.title}</h2>
-              <p>{modal.category}</p>
+      {selected && (
+        <section className="gallery-viewer" aria-label="Foto terpilih">
+          <div className="gallery-viewer-card">
+            <div className="gallery-viewer-header">
+              <h2>{selected.title}</h2>
+              <button
+                type="button"
+                className="gallery-viewer-close"
+                aria-label="Tutup tampilan foto"
+                onClick={() => setSelected(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="gallery-viewer-image-wrap">
+              <img src={selected.src} alt={selected.title} />
+            </div>
+            <div className="gallery-viewer-meta">
+              <span className="badge">{selected.category}</span>
+            </div>
+
+            <div className="gallery-actions">
+              <div className="actions-left">
+                <button type="button" onClick={onToggleLike} disabled={likeBusy} className={`btn-heart ${liked ? 'is-liked' : ''}`} aria-label={liked ? 'Batalkan suka' : 'Suka'}>
+                  {likeBusy ? (
+                    '...'
+                  ) : (
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill={'currentColor'} aria-hidden="true">
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41.81 4.5 2.09C12.59 4.81 14.26 4 16 4 18.5 4 20.5 6 20.5 8.5c0 3.78-3.4 6.86-8.05 11.54L12 21.35z"></path>
+                    </svg>
+                  )}
+                </button>
+                <span className="like-count">{likeCount} suka</span>
+              </div>
+              <div className="like-end">
+                <button type="button" className="btn-comment" aria-label="Komentar" onClick={() => { commentInputRef.current?.focus(); commentInputRef.current?.scrollIntoView({behavior:'smooth', block:'nearest'}); }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+                  </svg>
+                </button>
+                <button type="button" onClick={onDownload} className="btn-download" aria-label="Unduh">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="comments" style={{padding:'8px 12px 16px'}}>
+              <form onSubmit={onSendComment} style={{display:'flex', gap:8, marginBottom:12}}>
+                <input
+                  type="text"
+                  placeholder="Tulis komentar..."
+                  value={commentText}
+                  onChange={(e)=>setCommentText(e.target.value)}
+                  ref={commentInputRef}
+                  style={{flex:1}}
+                />
+                <button type="submit" disabled={commentBusy || !commentText.trim()} className="btn-send" aria-label="Kirim komentar">
+                  {commentBusy ? (
+                    '...'
+                  ) : (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <line x1="22" y1="2" x2="11" y2="13"/>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                  )}
+                </button>
+              </form>
+              <div className="comment-list" style={{display:'grid', gap:8}}>
+                {comments.length === 0 ? (
+                  <div style={{opacity:.7}}>Belum ada komentar.</div>
+                ) : (
+                  comments.map((c) => (
+                    <div key={c.id} className="comment-item" style={{border:'1px solid #eee', borderRadius:8, padding:8}}>
+                      <div style={{fontWeight:600, fontSize:13}}>{c.user?.name || 'Anonim'}</div>
+                      <div style={{fontSize:14}}>{c.body}</div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       )}
 
       <footer className="site-footer">

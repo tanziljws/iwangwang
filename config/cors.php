@@ -1,50 +1,38 @@
 <?php
 
 return [
+
     /*
     |--------------------------------------------------------------------------
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
     |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
+    | Konfigurasi ini mengizinkan permintaan dari frontend Vite
+    | (mis. http://localhost:5173) ke endpoint API Laravel (/api/*),
+    | termasuk method DELETE, tanpa error CORS.
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'register', 'logout'],
+    // Terapkan CORS hanya pada route API dan sanctum
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
+    // Izinkan semua method HTTP (GET, POST, PUT, DELETE, OPTIONS, ...)
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // Batasi origin ke frontend dev; bisa ditambah origin lain jika perlu
+    'allowed_origins' => [
+        'http://localhost:5173',
+    ],
 
     'allowed_origins_patterns' => [],
 
+    // Izinkan semua header yang umum dipakai oleh fetch/AJAX
     'allowed_headers' => ['*'],
 
+    // Tidak perlu expose header khusus untuk kasus ini
     'exposed_headers' => [],
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
-
-    'allowed_headers' => [
-        'Content-Type',
-        'X-Auth-Token',
-        'Origin',
-        'Authorization',
-        'X-Requested-With',
-        'Accept',
-        'X-CSRF-TOKEN',
-    ],
-
-    'exposed_headers' => [
-        'Authorization',
-    ],
-
-    'max_age' => 0,
-
-    'supports_credentials' => true,
+    // Untuk dev ini tidak butuh cookie kredensial lintas origin
+    'supports_credentials' => false,
 ];

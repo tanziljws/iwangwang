@@ -846,6 +846,86 @@ img {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
+/* Admin Gallery Cards */
+.gallery-card {
+  background: var(--white);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.gallery-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  border-color: rgba(37, 99, 235, 0.55);
+}
+
+.card-image-container {
+  position: relative;
+  width: 100%;
+  /* Tetapkan rasio aspek agar semua kotak seragam (sekitar 4:3) */
+  padding-top: 66%;
+  background: var(--gray-100);
+  overflow: hidden;
+}
+
+.card-image-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px 16px 0 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+}
+
+.card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* semua foto mengisi kotak dengan rapi */
+  transition: transform 0.35s ease;
+}
+
+.gallery-card:hover .card-image {
+  transform: scale(1.03);
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.65), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 0.6rem 0.7rem;
+}
+
+.gallery-card:hover .card-overlay {
+  opacity: 1;
+}
+
+.card-overlay .card-actions {
+  border: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.card-overlay .btn-icon {
+  background: rgba(15, 23, 42, 0.65);
+  color: #e5e7eb;
+}
+
+.card-overlay .btn-icon:hover {
+  background: rgba(37, 99, 235, 0.95);
+  color: #ffffff;
+}
+
 .card {
   background: var(--white);
   border-radius: var(--border-radius-lg);
@@ -861,15 +941,15 @@ img {
   box-shadow: var(--shadow-lg);
   border-color: rgba(79, 70, 229, 0.2);
 }
-
-.card-image {
+/* Generic card image wrapper (dipakai oleh kartu lain, bukan gallery-card) */
+.card .card-image {
   position: relative;
   padding-top: 56.25%; /* 16:9 Aspect Ratio */
   overflow: hidden;
   background: var(--gray-100);
 }
 
-.card-image img {
+.card .card-image img {
   position: absolute;
   top: 0;
   left: 0;

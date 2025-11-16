@@ -84,15 +84,29 @@ class KategoriController extends Controller
             ->with('success', 'Kategori berhasil diperbarui!');
     }
 
-    public function destroy(Kategori $kategori)
+    public function destroy(Request $request, Kategori $kategori)
     {
         // Check if kategori has related galeri
         if ($kategori->galeri()->count() > 0) {
+            // Jika dipanggil via API, balas JSON agar tidak redirect (menghindari CORS)
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Kategori tidak dapat dihapus karena masih memiliki galeri!',
+                ], 422);
+            }
+
             return redirect()->route('admin.kategori.index')
                 ->with('error', 'Kategori tidak dapat dihapus karena masih memiliki galeri!');
         }
 
         $kategori->delete();
+
+        // Respon khusus untuk API
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Kategori berhasil dihapus!',
+            ], 200);
+        }
 
         return redirect()->route('admin.kategori.index')
             ->with('success', 'Kategori berhasil dihapus!');

@@ -13,14 +13,19 @@ import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
 import Agenda from './pages/Agenda';
 import Berita from './pages/Berita';
+import UserLogin from './pages/UserLogin';
+import UserRegister from './pages/UserRegister';
+import UserAccount from './pages/UserAccount';
 
 // Admin Pages
 import AdminLogin from './pages/admin/Login';
 import AdminRegister from './pages/admin/Register';
 import AdminDashboard from './pages/admin/Dashboard';
+import Statistik from './pages/admin/Statistik';
 import TambahKategori from './pages/admin/tambahkategori';
 import TambahGaleri from './pages/admin/tambahgaleri';
 import TambahFoto from './pages/admin/tambahfoto';
+import EditGaleri from './pages/admin/EditGaleri';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -61,6 +66,21 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/admin/login" replace />;
   }
   
+  return children;
+};
+
+const ProtectedUserRoute = ({ children }) => {
+  const [ok, setOk] = useState(false);
+  const [loadingCheck, setLoadingCheck] = useState(true);
+
+  useEffect(() => {
+    const t = localStorage.getItem('userToken');
+    setOk(!!t);
+    setLoadingCheck(false);
+  }, []);
+
+  if (loadingCheck) return <div className="loading">Checking authentication...</div>;
+  if (!ok) return <Navigate to="/login" replace />;
   return children;
 };
 
@@ -117,13 +137,15 @@ function App() {
     return <div className="loading">Loading gallery...</div>;
   }
 
-  // Check if current route is an admin route
-  const isAdminRoute = window.location.pathname.startsWith('/admin');
+  // Check route categories to decide showing site chrome
+  const path = window.location.pathname;
+  const isAdminRoute = path.startsWith('/admin');
+  const isAuthRoute = path === '/login' || path === '/register' || path === '/account';
 
   return (
     <Router>
       <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {!isAdminRoute && (
+        {!isAdminRoute && !isAuthRoute && (
           <>
             <TopBar />
             <Navbar />
@@ -142,6 +164,9 @@ function App() {
               } 
             />
             <Route path="/gallery" element={<Gallery />} />
+            <Route path="/login" element={<UserLogin />} />
+            <Route path="/register" element={<UserRegister />} />
+            <Route path="/account" element={<ProtectedUserRoute><UserAccount /></ProtectedUserRoute>} />
             <Route path="/berita" element={<Berita />} />
             <Route path="/news" element={<Berita />} />
             <Route path="/agenda" element={<Agenda />} />
@@ -159,6 +184,14 @@ function App() {
               } 
             />
             <Route 
+              path="/admin/statistik" 
+              element={
+                <ProtectedRoute>
+                  <Statistik />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/admin/tambah-kategori" 
               element={
                 <ProtectedRoute>
@@ -171,6 +204,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <TambahGaleri />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/admin/edit-galeri/:id" 
+              element={
+                <ProtectedRoute>
+                  <EditGaleri />
                 </ProtectedRoute>
               }
             />

@@ -5,7 +5,6 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('galeri');
-  const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [modalType, setModalType] = useState('galeri'); // 'kategori' | 'galeri' | 'foto'
   const [newItem, setNewItem] = useState({ title: '', description: '', image: null });
@@ -36,11 +35,12 @@ const Dashboard = () => {
     }
   }, [navigate]);
 
-  // API base config (used by quick-add). If not set, default to local Laravel
-  const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api').replace(/\/$/, '');
-  const ORIGIN_BASE = API_BASE.replace(/\/api\/?$/, '');
+  // API base config: untuk menghindari salah konfigurasi env,
+  // kita pakai base tetap ke Laravel lokal.
+  const API_BASE = 'http://localhost:8000/api';
+  const ORIGIN_BASE = 'http://localhost:8000';
 
-  // Kategori list for selects
+  // Kategori list (dipakai untuk select & tab Kategori)
   const [kategori, setKategori] = useState([]);
   const loadKategori = async () => {
     try {
@@ -110,6 +110,20 @@ const Dashboard = () => {
     const r = await fetch(`${API_BASE}/foto`, { method: 'POST', body: fd });
     if (!r.ok) throw new Error('Gagal mengunggah foto');
   };
+
+  const deleteKategori = async (id) => {
+    const res = await fetch(`${API_BASE}/kategori/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      throw new Error('Gagal menghapus kategori');
+    }
+  };
+
+  const deleteGaleri = async (id) => {
+    const res = await fetch(`${API_BASE}/galeri/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      throw new Error('Gagal menghapus galeri');
+    }
+  };
   
   const handleAddItem = () => {
     // In a real app, this would make an API call to add the item
@@ -144,30 +158,39 @@ const Dashboard = () => {
     setNewItem({ title: '', description: '', image: null });
   };
   
-  const handleDeleteItem = (id) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus item ini?')) {
+  const handleDeleteItem = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus item ini?')) return;
+
+    try {
       if (activeTab === 'galeri') {
+        await deleteGaleri(id);
         setGaleri(galeri.filter(item => item.id !== id));
+      } else if (activeTab === 'kategori') {
+        await deleteKategori(id);
+        setKategori(kategori.filter(item => item.id !== id));
       } else if (activeTab === 'berita') {
         setBerita(berita.filter(item => item.id !== id));
       } else if (activeTab === 'agenda') {
         setAgenda(agenda.filter(item => item.id !== id));
       }
+    } catch (e) {
+      alert(e.message || 'Gagal menghapus data');
     }
   };
   
   const filteredItems = () => {
-    const items = activeTab === 'galeri' ? galeri : 
+    const items = activeTab === 'galeri' ? galeri :
                  activeTab === 'berita' ? berita : agenda;
-    
-    return items.filter(item => 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    return items;
   };
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+  // Load kategori & galeri awal
+  useEffect(() => {
+    loadKategori();
+  }, []);
 
   // Load galeri from backend (uses Galeri API)
   useEffect(() => {
@@ -177,8 +200,12 @@ const Dashboard = () => {
         if (!res.ok) return;
         const data = await res.json();
         const mapped = (Array.isArray(data) ? data : []).map(g => {
-          const first = g?.foto?.[0];
-          const img = first?.file ? `${ORIGIN_BASE}/media/foto/${first.file}` : '';
+          const fotos = Array.isArray(g?.foto) ? g.foto.filter(f => f && f.status !== 0) : [];
+          const main = fotos.length > 0 ? fotos[fotos.length - 1] : null; // pakai foto terbaru
+          const version = main?.updated_at || g.updated_at || g.created_at || '';
+          const img = main?.file
+            ? `${ORIGIN_BASE}/media/foto/${main.file}${version ? `?v=${encodeURIComponent(version)}` : ''}`
+            : '';
           return {
             id: g.id,
             title: g.nama || `Galeri ${g.id}`,
@@ -221,6 +248,7 @@ const Dashboard = () => {
         </button>
         <h1>
           {activeTab === 'galeri' && 'Galeri'}
+          {activeTab === 'kategori' && 'Kategori'}
           {activeTab === 'berita' && 'Berita'}
           {activeTab === 'agenda' && 'Agenda'}
         </h1>
@@ -241,6 +269,26 @@ const Dashboard = () => {
         </div>
         
         <nav className="sidebar-nav">
+          <button 
+            className={`nav-item`}
+            onClick={() => {
+              navigate('/admin/statistik');
+              if (isMobile) setSidebarOpen(false);
+            }}
+          >
+            <Newspaper className="nav-icon" size={20} />
+            <span className="nav-text">Statistik</span>
+          </button>
+          <button 
+            className={`nav-item ${activeTab === 'kategori' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('kategori');
+              if (isMobile) setSidebarOpen(false);
+            }}
+          >
+            <Newspaper className="nav-icon" size={20} />
+            <span className="nav-text">Kategori</span>
+          </button>
           <button 
             className={`nav-item ${activeTab === 'galeri' ? 'active' : ''}`}
             onClick={() => {
@@ -287,48 +335,68 @@ const Dashboard = () => {
             <div className="header-title">
               <h1 className="text-2xl font-bold text-gray-800">
                 {activeTab === 'galeri' && 'Kelola Galeri'}
+                {activeTab === 'kategori' && 'Kelola Kategori'}
                 {activeTab === 'berita' && 'Kelola Berita'}
                 {activeTab === 'agenda' && 'Kelola Agenda'}
               </h1>
               <p className="text-sm text-gray-500">
                 {activeTab === 'galeri' && 'Kelola koleksi galeri sekolah'}
+                {activeTab === 'kategori' && 'Kelola kategori galeri'}
                 {activeTab === 'berita' && 'Kelola berita dan pengumuman'}
                 {activeTab === 'agenda' && 'Kelola jadwal dan acara sekolah'}
               </p>
             </div>
-            <div className="header-actions">
-              <div className="search-box">
-                <Search className="search-icon" size={18} />
-                <input 
-                  type="text" 
-                  className="search-input"
-                  placeholder={`Cari ${activeTab}...`}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label={`Cari ${activeTab}`}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Overview */}
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-label">Total Galeri</div>
-              <div className="stat-value">{galeri.length}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Total Berita</div>
-              <div className="stat-value">{berita.length}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-label">Total Agenda</div>
-              <div className="stat-value">{agenda.length}</div>
-            </div>
+            <div className="header-actions" />
           </div>
 
           {/* Content Body */}
           <div className="content-body">
+            {activeTab === 'kategori' && (
+              <div className="table-container">
+                {kategori.length > 0 ? (
+                  <div className="table-responsive">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Nama Kategori</th>
+                          <th>Deskripsi</th>
+                          <th className="text-right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {kategori.map(k => (
+                          <tr key={k.id} className="hover:bg-gray-50">
+                            <td>
+                              <div className="font-medium text-gray-900">{k.nama || k.name || `Kategori ${k.id}`}</div>
+                            </td>
+                            <td>
+                              <div className="text-sm text-gray-600 max-w-xs truncate">{k.deskripsi || '-'}</div>
+                            </td>
+                            <td>
+                              <div className="flex justify-end space-x-2">
+                                <button 
+                                  className="btn-icon btn-delete"
+                                  onClick={() => handleDeleteItem(k.id)}
+                                  aria-label={`Hapus kategori ${k.nama}`}
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <Newspaper size={48} className="empty-icon" />
+                    <h3>Belum ada kategori</h3>
+                    <p>Tambahkan kategori baru melalui tombol "Tambah Kategori" di bagian Galeri.</p>
+                  </div>
+                )}
+              </div>
+            )}
             {activeTab === 'galeri' && (
               <>
                 <div className="quick-add-row">
@@ -361,6 +429,7 @@ const Dashboard = () => {
                             <button 
                               className="btn-icon btn-edit"
                               aria-label={`Edit ${item.title}`}
+                              onClick={() => navigate(`/admin/edit-galeri/${item.id}`)}
                             >
                               <Edit size={16} />
                             </button>

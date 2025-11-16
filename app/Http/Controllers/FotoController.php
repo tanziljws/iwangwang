@@ -25,14 +25,28 @@ class FotoController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'galeri_id' => 'required|exists:galeri,id',
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            // Naikkan batas ukuran file menjadi 8MB (8192 KB)
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:8192',
             'alt_text' => 'nullable|string|max:255',
             'urutan' => 'nullable|integer|min:0'
-        ]);
+        ];
+
+        $validator = \Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         $filename = null;
         
@@ -56,9 +70,22 @@ class FotoController extends Controller
             'status' => 1
         ]);
 
-        // If API request, return JSON to avoid redirect and confirm file name
+        // If API request, replace any previous photos in this gallery with this new one
         if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json(['message' => 'Foto berhasil ditambahkan', 'data' => $foto], 201);
+            Foto::where('galeri_id', $foto->galeri_id)
+                ->where('id', '!=', $foto->id)
+                ->get()
+                ->each(function ($other) {
+                    if ($other->file && Storage::disk('public')->exists('foto/' . $other->file)) {
+                        Storage::disk('public')->delete('foto/' . $other->file);
+                    }
+                    $other->delete();
+                });
+
+            return response()->json([
+                'message' => 'Foto berhasil ditambahkan',
+                'data' => $foto->fresh(),
+            ], 201);
         }
 
         return redirect()->route('admin.foto.index')
@@ -75,16 +102,31 @@ class FotoController extends Controller
     public function update(Request $request, $id)
     {
         $foto = Foto::findOrFail($id);
-        
-        $request->validate([
-            'galeri_id' => 'required|exists:galeri,id',
-            'judul' => 'required|string|max:255',
+
+        $rules = [
+            // Untuk update dari API, field ini bisa dikirim sebagian; gunakan sometimes|required
+            'galeri_id' => 'sometimes|required|exists:galeri,id',
+            'judul' => 'sometimes|required|string|max:255',
             'deskripsi' => 'nullable|string',
-            'file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            // Samakan batas ukuran dengan store (8MB)
+            'file' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:8192',
             'alt_text' => 'nullable|string|max:255',
             'urutan' => 'nullable|integer|min:0',
-            'status' => 'required|boolean'
-        ]);
+            'status' => 'sometimes|boolean',
+        ];
+
+        $validator = \Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         $data = $request->except('file');
 
@@ -94,7 +136,7 @@ class FotoController extends Controller
             if ($foto->file && Storage::disk('public')->exists('foto/' . $foto->file)) {
                 Storage::disk('public')->delete('foto/' . $foto->file);
             }
-            
+
             $file = $request->file('file');
             // Generate a unique filename
             $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
@@ -104,6 +146,25 @@ class FotoController extends Controller
         }
 
         $foto->update($data);
+
+        // Jika dipanggil via API, jadikan foto ini sebagai satu-satunya foto galeri (replace semua yang lama)
+        if ($request->wantsJson() || $request->is('api/*')) {
+            // Hapus semua foto lain dalam galeri yang berbeda id-nya
+            Foto::where('galeri_id', $foto->galeri_id)
+                ->where('id', '!=', $foto->id)
+                ->get()
+                ->each(function ($other) {
+                    if ($other->file && Storage::disk('public')->exists('foto/' . $other->file)) {
+                        Storage::disk('public')->delete('foto/' . $other->file);
+                    }
+                    $other->delete();
+                });
+
+            return response()->json([
+                'message' => 'Foto berhasil diperbarui',
+                'data' => $foto->fresh(),
+            ], 200);
+        }
 
         return redirect()->route('admin.foto.index')
             ->with('success', 'Foto berhasil diperbarui!');

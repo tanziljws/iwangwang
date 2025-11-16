@@ -7,7 +7,7 @@
   width: 100%;
   background-color: #1a56db;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 900; /* lebih rendah saat di atas agar TopBar tampak */
   transition: all 0.3s ease;
   padding: 0;
   margin: 0;
@@ -27,13 +27,14 @@
 
 /* Animation when scrolling */
 .navbar.scrolling-down {
-  transform: translateY(-100%);
+  transform: translateY(0); /* tetap terlihat, jangan geser ke atas */
 }
 
 .navbar.scrolling-up {
   transform: translateY(0);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 8px 0;
+  z-index: 2000; /* overlay TopBar saat scroll */
 }
 
 .navbar.scrolling-up::after {
@@ -45,6 +46,7 @@
   padding: 5px 0;
   background-color: rgba(0, 70, 255, 0.9);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 2000; /* overlay TopBar saat scroll */
 }
 
 .navbar-container {
@@ -118,6 +120,24 @@
   display: flex;
   gap: 35px;
   align-items: center;
+}
+
+/* Auth / User styles on navbar */
+.auth-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.auth-link:hover { text-decoration: underline; }
+
+.user-pill { display: inline-flex; align-items: center; gap: 8px; color: #ffffff; text-decoration: none; }
+.avatar-circle {
+  width: 32px; height: 32px; border-radius: 999px;
+  background: transparent;              /* transparent fill */
+  border: 2px solid #ffffff;            /* white ring */
+  color: #ffffff;                       /* icon/text white */
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem;
 }
 
 .nav-link {
@@ -230,13 +250,13 @@
     right: -100%;
     width: 70%;
     height: 100vh;
-    background-color: #fff;
+    background-color: #ffffff; /* background putih di mobile */
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     transition: all 0.5s ease;
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-    padding: 60px 20px 40px;
+    padding: 80px 20px 32px;
   }
 
   .nav-links.active {
@@ -244,12 +264,38 @@
   }
 
   .nav-link {
-    font-size: 1.2rem;
-    margin: 15px 0;
+    font-size: 1.05rem;
+    margin: 4px 0;
     padding: 10px 20px;
+    color: #1a56db !important; /* teks biru agar kontras dengan background putih */
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
   }
 
   .nav-link::after {
     display: none;
   }
+
+  /* Paksa warna biru di mobile, override rule global yang memaksa putih */
+  .navbar .nav-links .nav-link,
+  .navbar .nav-links .nav-link:link,
+  .navbar .nav-links .nav-link:visited,
+  .navbar .nav-links .nav-link:hover,
+  .navbar .nav-links .nav-link:active,
+  .navbar .nav-links .nav-link:focus {
+    color: #1a56db !important;
+  }
+
+  /* Animasi teks saat menu mobile dibuka */
+  .nav-links.active .nav-link {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .nav-links.active .nav-link:nth-child(1) { transition-delay: 0.05s; }
+  .nav-links.active .nav-link:nth-child(2) { transition-delay: 0.10s; }
+  .nav-links.active .nav-link:nth-child(3) { transition-delay: 0.15s; }
+  .nav-links.active .nav-link:nth-child(4) { transition-delay: 0.20s; }
+  .nav-links.active .nav-link:nth-child(5) { transition-delay: 0.25s; }
 }

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './tambahgaleri.css';
 const TambahGaleri = ({ loadKategori, kategori = [], onSubmit, onCancel }) => {
   const [form, setForm] = useState({ judul: '', kategori_id: '', deskripsi: '', file: null });
   const [saving, setSaving] = useState(false);
   const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api').replace(/\/$/, '');
   const [internalKategori, setInternalKategori] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Jika parent tidak memasok kategori, ambil sendiri dari API
@@ -69,7 +71,7 @@ const TambahGaleri = ({ loadKategori, kategori = [], onSubmit, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="tambah-form">
       <div className="form-group">
         <label className="form-label">Judul Galeri</label>
         <div className="input-group">
@@ -115,7 +117,16 @@ const TambahGaleri = ({ loadKategori, kategori = [], onSubmit, onCancel }) => {
         </div>
       </div>
       <div className="modal-footer">
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>Batal</button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => {
+            onCancel?.();
+            navigate('/admin/dashboard');
+          }}
+        >
+          Kembali
+        </button>
         <button type="submit" className="btn btn-primary" disabled={saving || !form.judul || !form.kategori_id}>
           {saving ? 'Menyimpan...' : 'Simpan Galeri'}
         </button>

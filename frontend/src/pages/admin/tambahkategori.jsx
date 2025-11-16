@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './tambahkategori.css';
 
 const TambahKategori = ({ onSubmit, onCancel }) => {
   const [form, setForm] = useState({ nama: '', deskripsi: '' });
   const [saving, setSaving] = useState(false);
   const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api').replace(/\/$/, '');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e?.preventDefault();
@@ -28,7 +30,7 @@ const TambahKategori = ({ onSubmit, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="tambah-form">
       <div className="form-group">
         <label className="form-label">Nama Kategori</label>
         <div className="input-group">
@@ -53,7 +55,16 @@ const TambahKategori = ({ onSubmit, onCancel }) => {
         </div>
       </div>
       <div className="modal-footer">
-        <button type="button" className="btn btn-secondary" onClick={onCancel}>Batal</button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => {
+            onCancel?.();
+            navigate('/admin/dashboard');
+          }}
+        >
+          Kembali
+        </button>
         <button type="submit" className="btn btn-primary" disabled={saving || !form.nama}>
           {saving ? 'Menyimpan...' : 'Simpan Kategori'}
         </button>

@@ -43,22 +43,10 @@ const Home = () => {
   return (
     <div className="home" style={{ width: '100%', margin: 0, padding: 0 }}>
       {/* Hero Section */}
-      <section className="hero" style={{ margin: 0, padding: 0 }}>
-        
+      <section className="hero">
         <div className="container">
-          <div className="hero-content">
-            <h1 className="hero-title" style={{
-              fontSize: '4rem',
-              fontWeight: '800',
-              textTransform: 'uppercase',
-              letterSpacing: '2px',
-              margin: '0',
-              color: '#FFFFFF',
-              textShadow: '0 4px 14px rgba(0,0,0,0.35)'
-            }}>
-              Website Gallery
-            </h1>
-            <p className="hero-subtitle">SMKN 4 Kota Bogor</p>
+          <div className="hero-content hero-centered">
+            {/* hero text removed as requested */}
           </div>
         </div>
       </section>

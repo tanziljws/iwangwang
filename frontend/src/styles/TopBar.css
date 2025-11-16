@@ -151,22 +151,24 @@ a.info-link:visited {
   opacity: 0.9 !important;
 }
 
-/* Navbar adjustment */
-.navbar {
-  position: relative;
-  top: 0 !important;
-  border-top: none;
-}
 
 /* Responsive styles */
 @media (max-width: 768px) {
   .top-bar {
-    padding: 3px 0;
+    padding: 2px 0;
     font-size: 0.7rem;
   }
   
+  .top-bar-container {
+    padding: 0 12px;
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
   .top-bar-info {
-    gap: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   
   /* KEEP text beside icon on mobile */

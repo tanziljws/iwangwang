@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserAuthController;
 use App\Http\Controllers\GaleryController;
 use App\Http\Controllers\Api\GaleriApiController;
 use App\Http\Controllers\KategoriController;
@@ -9,6 +10,9 @@ use App\Http\Controllers\FotoController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\LikeController;
+use App\Http\Controllers\Api\DownloadController;
 
 // Authentication Routes
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -18,9 +22,31 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 });
 
+// User Auth (for gallery interactions)
+Route::prefix('user')->group(function () {
+    Route::post('/register', [UserAuthController::class, 'register']);
+    Route::post('/login', [UserAuthController::class, 'login']);
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me', [UserAuthController::class, 'me']);
+        Route::post('/logout', [UserAuthController::class, 'logout']);
+    });
+});
+
 // Protected API Routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     // Your protected routes here
+    // Gallery interactions - require login
+    // Comments
+    Route::get('/foto/{foto}/comments', [CommentController::class, 'index']);
+    Route::post('/foto/{foto}/comments', [CommentController::class, 'store']);
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+
+    // Likes
+    Route::post('/foto/{foto}/like', [LikeController::class, 'toggle']);
+    Route::get('/foto/{foto}/likes/count', [LikeController::class, 'count']);
+
+    // Download photo (and record download)
+    Route::get('/foto/{foto}/download', [DownloadController::class, 'download']);
 });
 
 // Public API Routes
@@ -36,9 +62,9 @@ Route::delete('/galery/{id}', [GaleryController::class, 'destroy']); // Delete g
 // Kategori API (JSON)
 Route::get('/kategori', [KategoriController::class, 'indexApi']);
 Route::post('/kategori', [KategoriController::class, 'store']);
-Route::get('/kategori/{id}', [KategoriController::class, 'show']);
-Route::put('/kategori/{id}', [KategoriController::class, 'update']);
-Route::delete('/kategori/{id}', [KategoriController::class, 'destroy']);
+Route::get('/kategori/{kategori}', [KategoriController::class, 'show']);
+Route::put('/kategori/{kategori}', [KategoriController::class, 'update']);
+Route::delete('/kategori/{kategori}', [KategoriController::class, 'destroy']);
 
 // Foto API
 Route::get('/foto', [FotoController::class, 'index']);
