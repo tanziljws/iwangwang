@@ -7,18 +7,26 @@ use App\Models\Download;
 use App\Models\Foto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Throwable;
 
 class DownloadController extends Controller
 {
     public function download(Request $request, Foto $foto)
     {
-        // catat download
-        Download::create([
-            'user_id' => $request->user()->id,
-            'foto_id' => $foto->id,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        // catat download (jangan sampai error DB membuat download gagal)
+        try {
+            if ($request->user()) {
+                Download::create([
+                    'user_id' => $request->user()->id,
+                    'foto_id' => $foto->id,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+            }
+        } catch (Throwable $e) {
+            // optional: log error, tapi jangan hentikan proses download
+            // logger()->error('Download log failed', ['error' => $e->getMessage()]);
+        }
 
         // tentukan path file
         $file = $foto->file;

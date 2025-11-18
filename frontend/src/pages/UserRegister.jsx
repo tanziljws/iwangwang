@@ -50,10 +50,8 @@ export default function UserRegister() {
       if (!res.ok) {
         setError(data?.message || 'Registrasi gagal');
       } else {
-        localStorage.setItem('userToken', data.token);
-        localStorage.setItem('userProfile', JSON.stringify(data.user || {}));
-        window.dispatchEvent(new Event('auth-changed'));
-        navigate('/account');
+        // Registrasi berhasil, arahkan ke halaman login
+        navigate('/login');
       }
     } catch (e) {
       setError('Terjadi kesalahan');
@@ -64,18 +62,32 @@ export default function UserRegister() {
 
   return (
     <div className="auth-page" style={{display:'grid', placeItems:'center', padding:'48px 16px'}}>
-      <form onSubmit={onSubmit} className="auth-card" style={{width:'100%', maxWidth:420, background:'#fff', border:'1px solid #e5e7eb', borderRadius:12, padding:20, boxShadow:'0 10px 24px rgba(15,23,42,0.06)'}}>
-        <h2 style={{margin:'0 0 12px'}}>Daftar</h2>
-        <p className="auth-subtle" style={{margin:'0 0 18px'}}>Buat akun agar bisa like, komentar, dan unduh foto.</p>
-        {error && <div style={{color:'#ef4444', marginBottom:12}}>{error}</div>}
-        <div style={{display:'grid', gap:10}}>
-          <input className="auth-input" type="text" value={name} onChange={(e)=>setName(e.target.value)} placeholder="Nama" required />
-          <input className="auth-input" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" required />
-          <input className="auth-input" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Password" required />
-          <input className="auth-input" type="password" value={confirm} onChange={(e)=>setConfirm(e.target.value)} placeholder="Konfirmasi Password" required />
-          <button type="submit" disabled={loading} className="auth-primary">{loading ? 'Memproses...' : 'Daftar'}</button>
-          <div style={{textAlign:'center'}}>
-            Sudah punya akun? <Link to="/login" className="auth-link">Login</Link>
+      <form onSubmit={onSubmit} className="auth-card" style={{width:'100%', maxWidth:820, background:'#fff', border:'1px solid #e5e7eb', borderRadius:16, padding:0, boxShadow:'0 18px 40px rgba(15,23,42,0.08)'}}>
+        <div className="auth-split">
+          <div className="auth-split-left">
+            <div className="auth-logo-img">
+              <img src="/images/smkn4.jpg" alt="Logo SMKN 4" />
+            </div>
+            <div className="auth-brand">SMKN 4 KOTA BOGOR</div>
+            <div className="auth-welcome-text">
+              <h2>Daftar akun baru</h2>
+              <p>Buat akunmu agar bisa memberi like, komentar, dan mengunduh foto galeri sekolah.</p>
+            </div>
+          </div>
+          <div className="auth-split-right">
+            <h3 style={{margin:'0 0 12px'}}>Daftar</h3>
+            <p className="auth-subtle" style={{margin:'0 0 18px', fontSize:'.9rem'}}>Isi data di bawah ini dengan benar.</p>
+            {error && <div style={{color:'#ef4444', marginBottom:12}}>{error}</div>}
+            <div style={{display:'grid', gap:10}}>
+              <input className="auth-input" type="text" value={name} onChange={(e)=>setName(e.target.value)} placeholder="Nama" required />
+              <input className="auth-input" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" required />
+              <input className="auth-input" type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Password" required />
+              <input className="auth-input" type="password" value={confirm} onChange={(e)=>setConfirm(e.target.value)} placeholder="Konfirmasi Password" required />
+              <button type="submit" disabled={loading} className="auth-primary">{loading ? 'Memproses...' : 'Daftar'}</button>
+              <div style={{textAlign:'center', fontSize:'.9rem'}}>
+                Sudah punya akun? <Link to="/login" className="auth-link">Login</Link>
+              </div>
+            </div>
           </div>
         </div>
       </form>

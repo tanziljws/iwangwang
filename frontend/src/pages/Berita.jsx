@@ -1,48 +1,51 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { FaCalendarAlt, FaUser, FaArrowRight, FaNewspaper } from 'react-icons/fa';
 import '../styles/Berita.css';
 import '../styles/Home.css';
 
-const mockNews = [
-  {
-    id: 1,
-    title: 'Siswa SMKN 4 Raih Juara Nasional',
-    excerpt: 'Tim siswa berhasil meraih juara 1 pada kompetisi tingkat nasional berkat inovasi aplikasi pendidikan.',
-    date: '12 Nov 2025',
-    author: 'Admin Sekolah',
-    category: 'Prestasi',
-    image: '/images/hero-bg.jpg'
-  },
-  {
-    id: 2,
-    title: 'Kerja Sama Industri: Program Magang 2026',
-    excerpt: 'Sekolah menandatangani MoU dengan perusahaan teknologi untuk membuka peluang magang bagi siswa kelas XI & XII.',
-    date: '05 Nov 2025',
-    author: 'Humas',
-    category: 'Kerjasama',
-    image: '/images/hero-bg.jpg'
-  },
-  {
-    id: 3,
-    title: 'Workshop AI dan IoT untuk Siswa',
-    excerpt: 'Kegiatan workshop menghadirkan pemateri dari industri untuk memperkenalkan teknologi terbaru AI dan IoT.',
-    date: '28 Okt 2025',
-    author: 'Panitia',
-    category: 'Workshop',
-    image: '/images/hero-bg.jpg'
-  },
-  {
-    id: 4,
-    title: 'Renovasi Perpustakaan Rampung',
-    excerpt: 'Perpustakaan baru kini lebih nyaman dengan ruang baca modern dan koleksi buku yang lebih lengkap.',
-    date: '18 Okt 2025',
-    author: 'Admin',
-    category: 'Fasilitas',
-    image: '/images/hero-bg.jpg'
-  }
-];
+const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api').replace(/\/$/, '');
+const ORIGIN_BASE = (import.meta?.env?.VITE_ORIGIN_BASE || 'http://localhost:8000').replace(/\/$/, '');
+
+const resolveImage = (path) => {
+  if (!path) return '/images/agenda/placeholder.jpg';
+  if (path.startsWith('http')) return path;
+  const normalized = path.startsWith('storage/') ? path : `storage/${path}`;
+  return `${ORIGIN_BASE}/${normalized}`;
+};
 
 const Berita = () => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE}/berita`);
+        if (!res.ok) throw new Error('Gagal memuat berita');
+        const data = await res.json();
+        setItems(Array.isArray(data) ? data : []);
+        setError('');
+      } catch (e) {
+        setError(e.message || 'Gagal memuat berita');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, []);
+
+  const formatDate = (date) => {
+    if (!date) return '-';
+    try {
+      return new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch {
+      return date;
+    }
+  };
+
   return (
     <div className="berita-page">
       <section className="berita-hero">
@@ -62,20 +65,29 @@ const Berita = () => {
 
       <section className="berita-section">
         <div className="berita-grid">
-          {mockNews.map((news) => (
+          {loading && (
+            <div className="agenda-loading" style={{ gridColumn: '1 / -1' }}>Memuat berita...</div>
+          )}
+          {!loading && error && (
+            <div className="agenda-error" style={{ gridColumn: '1 / -1' }}>{error}</div>
+          )}
+          {!loading && !error && items.length === 0 && (
+            <div className="agenda-empty" style={{ gridColumn: '1 / -1' }}>Belum ada berita.</div>
+          )}
+          {!loading && !error && items.map((news) => (
             <article key={news.id} className="berita-card">
               <div className="berita-image">
-                <img src={news.image} alt={news.title} />
-                <div className="berita-category">{news.category}</div>
+                <img src={resolveImage(news.cover_image)} alt={news.title} />
+                {news.category && <div className="berita-category">{news.category}</div>}
               </div>
               <div className="berita-content">
                 <div className="berita-meta">
-                  <span className="meta-item"><FaCalendarAlt /> {news.date}</span>
-                  <span className="meta-item"><FaUser /> {news.author}</span>
+                  <span className="meta-item"><FaCalendarAlt /> {formatDate(news.published_at)}</span>
+                  <span className="meta-item"><FaUser /> {news.author || 'Admin Sekolah'}</span>
                 </div>
                 <h3>{news.title}</h3>
-                <p>{news.excerpt}</p>
-                <button className="read-more" type="button">
+                <p>{news.excerpt || news.content?.slice(0, 160) + (news.content?.length > 160 ? '...' : '')}</p>
+                <button className="read-more" type="button" disabled>
                   Baca Selengkapnya <FaArrowRight />
                 </button>
               </div>

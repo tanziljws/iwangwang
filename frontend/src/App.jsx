@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import TopBar from './components/TopBar';
@@ -25,6 +25,10 @@ import Statistik from './pages/admin/Statistik';
 import TambahKategori from './pages/admin/tambahkategori';
 import TambahGaleri from './pages/admin/tambahgaleri';
 import TambahFoto from './pages/admin/tambahfoto';
+import AddAgenda from './pages/admin/AddAgenda';
+import AddBerita from './pages/admin/AddBerita';
+import EditAgenda from './pages/admin/EditAgenda';
+import EditBerita from './pages/admin/EditBerita';
 import EditGaleri from './pages/admin/EditGaleri';
 
 // Protected Route Component
@@ -85,6 +89,7 @@ const ProtectedUserRoute = ({ children }) => {
 };
 
 function App() {
+  const location = useLocation();
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -138,21 +143,20 @@ function App() {
   }
 
   // Check route categories to decide showing site chrome
-  const path = window.location.pathname;
+  const path = location.pathname;
   const isAdminRoute = path.startsWith('/admin');
   const isAuthRoute = path === '/login' || path === '/register' || path === '/account';
 
   return (
-    <Router>
-      <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {!isAdminRoute && !isAuthRoute && (
-          <>
-            <TopBar />
-            <Navbar />
-          </>
-        )}
-        <main style={{ flex: 1, width: '100%', margin: 0, padding: 0 }}>
-          <Routes>
+    <div className="App" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {!isAdminRoute && !isAuthRoute && (
+        <>
+          <TopBar />
+          <Navbar />
+        </>
+      )}
+      <main style={{ flex: 1, width: '100%', margin: 0, padding: 0 }}>
+        <Routes>
             <Route 
               path="/" 
               element={
@@ -223,6 +227,38 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route 
+              path="/admin/tambah-agenda" 
+              element={
+                <ProtectedRoute>
+                  <AddAgenda />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/admin/tambah-berita" 
+              element={
+                <ProtectedRoute>
+                  <AddBerita />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/admin/edit-agenda/:id" 
+              element={
+                <ProtectedRoute>
+                  <EditAgenda />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/admin/edit-berita/:id" 
+              element={
+                <ProtectedRoute>
+                  <EditBerita />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           </Routes>
         </main>
@@ -245,7 +281,6 @@ function App() {
           </div>
         )}
       </div>
-    </Router>
   );
 }
 

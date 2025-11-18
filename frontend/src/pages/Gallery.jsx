@@ -164,8 +164,26 @@ const Gallery = () => {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         if (typeof data.count === 'number') setLikeCount(data.count);
-        if (data.status === 'liked') setLiked(true);
-        if (data.status === 'unliked') setLiked(false);
+        if (data.status === 'liked') {
+          setLiked(true);
+          try {
+            const raw = localStorage.getItem('userLikedPhotoIds') || '[]';
+            const arr = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+            if (!arr.includes(selected.id)) {
+              arr.push(selected.id);
+              localStorage.setItem('userLikedPhotoIds', JSON.stringify(arr));
+            }
+          } catch (_) {}
+        }
+        if (data.status === 'unliked') {
+          setLiked(false);
+          try {
+            const raw = localStorage.getItem('userLikedPhotoIds') || '[]';
+            const arr = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+            const next = arr.filter((id) => id !== selected.id);
+            localStorage.setItem('userLikedPhotoIds', JSON.stringify(next));
+          } catch (_) {}
+        }
       } else {
         alert(data?.message || 'Gagal mengubah like');
       }
@@ -193,6 +211,11 @@ const Gallery = () => {
       if (res.ok) {
         setComments((prev) => [data, ...prev]);
         setCommentText('');
+        try {
+          const raw = localStorage.getItem('userCommentCount') || '0';
+          const n = Number(raw) || 0;
+          localStorage.setItem('userCommentCount', String(n + 1));
+        } catch (_) {}
       } else {
         alert(data?.message || 'Gagal mengirim komentar');
       }
@@ -225,6 +248,11 @@ const Gallery = () => {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      try {
+        const raw = localStorage.getItem('userDownloadCount') || '0';
+        const n = Number(raw) || 0;
+        localStorage.setItem('userDownloadCount', String(n + 1));
+      } catch (_) {}
     } catch (e) {
       console.error(e);
       alert('Terjadi kesalahan saat mengunduh');

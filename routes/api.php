@@ -13,6 +13,8 @@ use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\DownloadController;
+use App\Http\Controllers\Api\AgendaController;
+use App\Http\Controllers\Api\BeritaController;
 
 // Authentication Routes
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -26,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('user')->group(function () {
     Route::post('/register', [UserAuthController::class, 'register']);
     Route::post('/login', [UserAuthController::class, 'login']);
+    Route::post('/forgot-password', [UserAuthController::class, 'forgotPassword']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [UserAuthController::class, 'me']);
         Route::post('/logout', [UserAuthController::class, 'logout']);
@@ -47,6 +51,22 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Download photo (and record download)
     Route::get('/foto/{foto}/download', [DownloadController::class, 'download']);
+
+    // List all registered gallery users (for admin dashboard)
+    Route::get('/users', [UserAuthController::class, 'index']);
+    Route::get('/users/reset-requests', [UserAuthController::class, 'resetRequests']);
+    Route::post('/users/{user}/reset-password', [UserAuthController::class, 'resetPassword']);
+
+    // Agenda management
+    Route::post('/agendas', [AgendaController::class, 'store']);
+    Route::put('/agendas/{agenda}', [AgendaController::class, 'update']);
+    Route::delete('/agendas/{agenda}', [AgendaController::class, 'destroy']);
+
+    // Berita management
+    Route::post('/berita', [BeritaController::class, 'store']);
+    Route::post('/berita/{beritum}', [BeritaController::class, 'update']);
+    Route::put('/berita/{beritum}', [BeritaController::class, 'update']);
+    Route::delete('/berita/{beritum}', [BeritaController::class, 'destroy']);
 });
 
 // Public API Routes
@@ -79,6 +99,14 @@ Route::post('/post', [PostController::class, 'store']);
 Route::get('/post/{id}', [PostController::class, 'show']);
 Route::put('/post/{id}', [PostController::class, 'update']);
 Route::delete('/post/{id}', [PostController::class, 'destroy']);
+
+// Agenda public endpoints
+Route::get('/agendas', [AgendaController::class, 'index']);
+Route::get('/agendas/{agenda}', [AgendaController::class, 'show']);
+
+// Berita public endpoints
+Route::get('/berita', [BeritaController::class, 'index']);
+Route::get('/berita/{beritum}', [BeritaController::class, 'show']);
 
 // Profile API
 

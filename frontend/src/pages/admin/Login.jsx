@@ -46,8 +46,14 @@ const Login = () => {
 
   return (
     <div className="admin-auth-container">
-      <div className="admin-auth-box">
-        <h2>Admin Login</h2>
+      <div className="admin-auth-card">
+        <div className="admin-auth-logo" aria-hidden="true">
+          <img src="/images/smkn4.jpg" alt="Logo SMKN 4" />
+        </div>
+        <h2 className="admin-auth-title">Masuk Admin</h2>
+        <p className="admin-auth-subtitle">
+          Gunakan email dan kata sandi akun admin untuk mengakses dashboard sekolah.
+        </p>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -68,14 +74,18 @@ const Login = () => {
               required
             />
           </div>
-          <button type="submit" className="btn-primary">Login</button>
+          <button type="submit" className="btn-primary">Masuk</button>
         </form>
-        <p className="auth-link">
-          Don't have an account? <span onClick={() => navigate('/admin/register')}>Register here</span>
-        </p>
+        <div className="auth-link">
+          <span>Belum punya akun?</span>{' '}
+          <button type="button" onClick={() => navigate('/admin/register')}>
+            Daftar di sini
+          </button>
+        </div>
       </div>
     </div>
   );
-};
+}
+;
 
 export default Login;

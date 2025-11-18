@@ -1,59 +1,43 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import '../styles/Agenda.css';
 
+const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api').replace(/\/$/, '');
+
+const getDayLabel = (date) => {
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime()) ? '--' : parsed.getDate();
+};
+
+const getMonthLabel = (date) => {
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime())
+    ? ''
+    : parsed.toLocaleString('id-ID', { month: 'short', year: 'numeric' });
+};
+
 const Agenda = () => {
-  // Sample agenda data
-  const agendaItems = [
-    {
-      id: 1,
-      title: 'Pembukaan Tahun Ajaran Baru',
-      date: '15 Juli 2023',
-      location: 'Lapangan Utama',
-      image: '/images/agenda/agenda1.jpg',
-      description: 'Acara pembukaan tahun ajaran baru 2023/2024 dengan berbagai kegiatan seru dan menarik.'
-    },
-    {
-      id: 2,
-      title: 'Pekan Olahraga Sekolah',
-      date: '20-25 Agustus 2023',
-      location: 'Lapangan Olahraga',
-      image: '/images/agenda/agenda2.jpg',
-      description: 'Kompetisi olahraga tahunan antar kelas dengan berbagai cabang olahraga.'
-    },
-    {
-      id: 3,
-      title: 'Peringatan Hari Guru',
-      date: '25 November 2023',
-      location: 'Aula Sekolah',
-      image: '/images/agenda/agenda3.jpg',
-      description: 'Acara penghargaan dan apresiasi untuk para guru SMKN 4 Bogor.'
-    },
-    {
-      id: 4,
-      title: 'Ujian Akhir Semester',
-      date: '4-15 Desember 2023',
-      location: 'Ruang Kelas',
-      image: '/images/agenda/agenda4.jpg',
-      description: 'Ujian akhir semester ganjil tahun ajaran 2023/2024.'
-    },
-    {
-      id: 5,
-      title: 'Pekan Kreativitas Siswa',
-      date: '10-14 Januari 2024',
-      location: 'Halaman Sekolah',
-      image: '/images/agenda/agenda5.jpg',
-      description: 'Ajang tahunan untuk menampilkan bakat dan kreativitas siswa.'
-    },
-    {
-      id: 6,
-      title: 'Studi Banding',
-      date: '20 Januari 2024',
-      location: 'Sekolah Mitra',
-      image: '/images/agenda/agenda6.jpg',
-      description: 'Kunjungan studi banding ke sekolah mitra untuk pertukaran ilmu.'
-    }
-  ];
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchAgenda = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE}/agendas`);
+        if (!res.ok) throw new Error('Gagal memuat agenda');
+        const data = await res.json();
+        setItems(Array.isArray(data) ? data : []);
+        setError('');
+      } catch (e) {
+        setError(e.message || 'Gagal memuat agenda');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAgenda();
+  }, []);
 
   return (
     <div className="agenda-page">
@@ -68,33 +52,48 @@ const Agenda = () => {
       {/* Agenda Grid */}
       <section className="agenda-grid-section">
         <div className="container">
+          {loading && (
+            <div className="agenda-loading">Memuat agenda...</div>
+          )}
+          {error && !loading && (
+            <div className="agenda-error">{error}</div>
+          )}
+          {!loading && !error && items.length === 0 && (
+            <div className="agenda-empty">Belum ada agenda yang dijadwalkan.</div>
+          )}
           <div className="agenda-grid">
-            {agendaItems.map((item) => (
-              <div key={item.id} className="agenda-card">
-                <div className="agenda-image">
-                  <img src={item.image} alt={item.title} />
-                  <div className="agenda-date">
-                    <span className="day">{item.date.split(' ')[0]}</span>
-                    <span className="month">{item.date.split(' ')[1]}</span>
+            {items.map((item) => {
+              const dayLabel = getDayLabel(item.date);
+              const monthLabel = getMonthLabel(item.date);
+              const fullDate = new Date(item.date);
+
+              return (
+                <div key={item.id} className="agenda-card agenda-card-plain">
+                  <div className="agenda-date-badge">
+                    <span className="day">{dayLabel}</span>
+                    <span className="month">{monthLabel}</span>
+                  </div>
+                  <div className="agenda-content">
+                    <h3>{item.title}</h3>
+                    <div className="agenda-meta">
+                      <span className="location">
+                        <i className="fas fa-map-marker-alt"></i> {item.location || 'Lokasi menyusul'}
+                      </span>
+                      <span className="date">
+                        <i className="far fa-calendar-alt"></i>{' '}
+                        {Number.isNaN(fullDate.getTime())
+                          ? '-'
+                          : fullDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        {item.time && (
+                          <> &bull; {item.time}</>
+                        )}
+                      </span>
+                    </div>
+                    <p>{item.description || 'Belum ada deskripsi tambahan.'}</p>
                   </div>
                 </div>
-                <div className="agenda-content">
-                  <h3>{item.title}</h3>
-                  <div className="agenda-meta">
-                    <span className="location">
-                      <i className="fas fa-map-marker-alt"></i> {item.location}
-                    </span>
-                    <span className="date">
-                      <i className="far fa-calendar-alt"></i> {item.date}
-                    </span>
-                  </div>
-                  <p>{item.description}</p>
-                  <Link to={`/agenda/${item.id}`} className="btn-detail">
-                    Lihat Detail <i className="fas fa-arrow-right"></i>
-                  </Link>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

@@ -1,28 +1,24 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Image, Newspaper, Calendar, Plus, Edit, Trash2, Search, LogOut, Menu, X, User } from 'lucide-react';
+import { Image, Newspaper, Calendar, Plus, Edit, Trash2, Search, LogOut, Menu, X, User, KeyRound } from 'lucide-react';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('galeri');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [modalType, setModalType] = useState('galeri'); // 'kategori' | 'galeri' | 'foto'
-  const [newItem, setNewItem] = useState({ title: '', description: '', image: null });
+  const [modalType, setModalType] = useState('galeri');
+  const [newItem, setNewItem] = useState({ title: '', description: '', date: '', time: '', location: '' });
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
   
   // Data galeri
   const [galeri, setGaleri] = useState([]);
   
-  const [berita, setBerita] = useState([
-    { id: 1, title: 'Penerimaan Siswa Baru 2024', date: '2023-11-15', excerpt: 'Pendaftaran dibuka mulai 1 Januari 2024' },
-    { id: 2, title: 'Workshop Teknologi Terkini', date: '2023-11-05', excerpt: 'Untuk seluruh siswa jurusan Teknik Komputer' },
-  ]);
+  const [berita, setBerita] = useState([]);
   
-  const [agenda, setAgenda] = useState([
-    { id: 1, title: 'Rapat Orang Tua', date: '2023-12-10', time: '09:00', location: 'Aula Sekolah' },
-    { id: 2, title: 'Ujian Akhir Semester', date: '2023-12-15', time: '07:30', location: 'Ruang Kelas' },
-  ]);
+  const [agenda, setAgenda] = useState([]);
+  const [editingAgenda, setEditingAgenda] = useState(null);
+  const [editingBerita, setEditingBerita] = useState(null);
 
   // Sidebar greeting uses static label to indicate admin
 
@@ -48,6 +44,34 @@ const Dashboard = () => {
       const data = await res.json();
       setKategori(Array.isArray(data) ? data : []);
     } catch {}
+  };
+
+  const handleResetPassword = async (user) => {
+    if (!window.confirm(`Reset password untuk ${user.name || 'user ini'}?`)) return;
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        navigate('/admin/login');
+        return;
+      }
+      const res = await fetch(`${API_BASE}/users/${user.id}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({})
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal mereset password');
+      }
+      alert(`Password baru untuk ${user.name || user.email}:\n${data.password}`);
+      loadResetRequests();
+    } catch (e) {
+      alert(e.message || 'Gagal mereset password');
+    }
   };
 
   // Galeri options for Foto form
@@ -125,37 +149,64 @@ const Dashboard = () => {
     }
   };
   
-  const handleAddItem = () => {
-    // In a real app, this would make an API call to add the item
-    if (activeTab === 'galeri') {
-      const newGaleriItem = {
-        id: Date.now(),
+  const saveAgenda = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        navigate('/admin/login');
+        return;
+      }
+
+      const payload = {
         title: newItem.title,
-        image: URL.createObjectURL(newItem.image),
-        date: new Date().toISOString().split('T')[0]
+        description: newItem.description || '',
+        date: newItem.date || '',
+        time: newItem.time || '',
+        location: newItem.location || '',
       };
-      setGaleri([...galeri, newGaleriItem]);
-    } else if (activeTab === 'berita') {
-      const newBeritaItem = {
-        id: Date.now(),
-        title: newItem.title,
-        excerpt: newItem.description,
-        date: new Date().toISOString().split('T')[0]
-      };
-      setBerita([...berita, newBeritaItem]);
-    } else if (activeTab === 'agenda') {
-      const newAgendaItem = {
-        id: Date.now(),
-        title: newItem.title,
-        date: newItem.date,
-        time: newItem.time || '00:00',
-        location: newItem.location || ''
-      };
-      setAgenda([...agenda, newAgendaItem]);
+
+      const method = editingAgenda ? 'PUT' : 'POST';
+      const url = editingAgenda
+        ? `${API_BASE}/agendas/${editingAgenda.id}`
+        : `${API_BASE}/agendas`;
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Gagal menyimpan agenda');
+      }
+
+      await loadAgenda();
+      closeModal();
+    } catch (e) {
+      alert(e.message || 'Gagal menyimpan agenda');
     }
-    
+  };
+
+  const handleAgendaSaveClick = async () => {
+    try {
+      setSaving(true);
+      await saveAgenda();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const closeModal = () => {
     setShowAddModal(false);
-    setNewItem({ title: '', description: '', image: null });
+    setModalType('galeri');
+    setNewItem({ title: '', description: '', date: '', time: '', location: '' });
+    setEditingAgenda(null);
+    setEditingBerita(null);
   };
   
   const handleDeleteItem = async (id) => {
@@ -169,9 +220,32 @@ const Dashboard = () => {
         await deleteKategori(id);
         setKategori(kategori.filter(item => item.id !== id));
       } else if (activeTab === 'berita') {
-        setBerita(berita.filter(item => item.id !== id));
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          navigate('/admin/login');
+          return;
+        }
+        await fetch(`${API_BASE}/berita/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        await loadBerita();
       } else if (activeTab === 'agenda') {
-        setAgenda(agenda.filter(item => item.id !== id));
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          navigate('/admin/login');
+          return;
+        }
+        await fetch(`${API_BASE}/agendas/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        await loadAgenda();
       }
     } catch (e) {
       alert(e.message || 'Gagal menghapus data');
@@ -180,17 +254,81 @@ const Dashboard = () => {
   
   const filteredItems = () => {
     const items = activeTab === 'galeri' ? galeri :
-                 activeTab === 'berita' ? berita : agenda;
+                 activeTab === 'berita' ? berita :
+                 activeTab === 'agenda' ? agenda : users;
     return items;
   };
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
+  // Users for "Kelola User"
+  const [users, setUsers] = useState([]);
+  const [resetRequests, setResetRequests] = useState([]);
+  const loadUsers = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        navigate('/admin/login');
+        return;
+      }
+      const res = await fetch(`${API_BASE}/users`, {
+        headers: { 
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setUsers(Array.isArray(data) ? data : []);
+    } catch (_) {}
+  };
+
+  const loadResetRequests = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        navigate('/admin/login');
+        return;
+      }
+      const res = await fetch(`${API_BASE}/users/reset-requests`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      setResetRequests(Array.isArray(data) ? data : []);
+    } catch (_) {}
+  };
+
   // Load kategori & galeri awal
   useEffect(() => {
     loadKategori();
+    loadUsers();
+    loadResetRequests();
+    loadAgenda();
+    loadBerita();
   }, []);
+
+  const loadAgenda = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/agendas`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setAgenda(Array.isArray(data) ? data : []);
+    } catch (_) {}
+  };
+
+  const loadBerita = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/berita`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setBerita(Array.isArray(data) ? data : []);
+    } catch (_) {}
+  };
 
   // Load galeri from backend (uses Galeri API)
   useEffect(() => {
@@ -319,6 +457,16 @@ const Dashboard = () => {
             <Calendar className="nav-icon" size={20} />
             <span className="nav-text">Agenda</span>
           </button>
+          <button 
+            className={`nav-item ${activeTab === 'user' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('user');
+              if (isMobile) setSidebarOpen(false);
+            }}
+          >
+            <User className="nav-icon" size={20} />
+            <span className="nav-text">Kelola User</span>
+          </button>
         </nav>
         <div className="sidebar-footer">
           <button className="btn btn-logout" onClick={handleLogout}>
@@ -338,15 +486,34 @@ const Dashboard = () => {
                 {activeTab === 'kategori' && 'Kelola Kategori'}
                 {activeTab === 'berita' && 'Kelola Berita'}
                 {activeTab === 'agenda' && 'Kelola Agenda'}
+                {activeTab === 'user' && 'Kelola User'}
               </h1>
               <p className="text-sm text-gray-500">
                 {activeTab === 'galeri' && 'Kelola koleksi galeri sekolah'}
                 {activeTab === 'kategori' && 'Kelola kategori galeri'}
                 {activeTab === 'berita' && 'Kelola berita dan pengumuman'}
                 {activeTab === 'agenda' && 'Kelola jadwal dan acara sekolah'}
+                {activeTab === 'user' && 'Kelola akun pengguna galeri'}
               </p>
             </div>
-            <div className="header-actions" />
+            <div className="header-actions">
+              {activeTab === 'agenda' && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate('/admin/tambah-agenda')}
+                >
+                  <Plus size={16} /> Tambah Agenda
+                </button>
+              )}
+              {activeTab === 'berita' && (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate('/admin/tambah-berita')}
+                >
+                  <Plus size={16} /> Tambah Berita
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Content Body */}
@@ -445,13 +612,10 @@ const Dashboard = () => {
                       </div>
                       <div className="card-content">
                         <h3 className="card-title">{item.title}</h3>
-                        <div className="card-meta">
-                          <span className="date">{new Date(item.date).toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          })}</span>
-                        </div>
+                        <span className="date">
+                          <i className="far fa-calendar-alt"></i> {new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          {item.time && ` • ${item.time}`}
+                        </span>
                       </div>
                     </div>
                     ))
@@ -466,16 +630,32 @@ const Dashboard = () => {
               </>
             )}
 
-          {(activeTab === 'berita' || activeTab === 'agenda') && (
+          {(activeTab === 'berita' || activeTab === 'agenda' || activeTab === 'user') && (
             <div className="table-container">
+              {activeTab === 'user' && (
+                <div className="reset-alert">
+                  {resetRequests.length > 0
+                    ? `${resetRequests.length} permintaan reset password menunggu tindakan admin.`
+                    : 'Tidak ada permintaan reset password yang menunggu.'}
+                </div>
+              )}
               {filteredItems().length > 0 ? (
                 <div className="table-responsive">
                   <table className="data-table">
                     <thead>
                       <tr>
-                        <th className="w-1/2">Judul</th>
-                        <th>{activeTab === 'berita' ? 'Tanggal' : 'Tanggal & Waktu'}</th>
+                        <th className="w-1/2">{activeTab === 'user' ? 'Nama' : 'Judul'}</th>
+                        <th>
+                          {activeTab === 'berita'
+                            ? 'Tanggal'
+                            : activeTab === 'agenda'
+                              ? 'Tanggal & Waktu'
+                              : activeTab === 'user'
+                                ? 'Email'
+                                : 'Keterangan'}
+                        </th>
                         {activeTab === 'agenda' && <th>Lokasi</th>}
+                        {activeTab === 'user' && <th>Status Permintaan</th>}
                         <th className="text-right">Aksi</th>
                       </tr>
                     </thead>
@@ -486,11 +666,14 @@ const Dashboard = () => {
                             <div className="flex items-center">
                               {activeTab === 'berita' && <Newspaper size={16} className="mr-3 text-blue-500" />}
                               {activeTab === 'agenda' && <Calendar size={16} className="mr-3 text-green-500" />}
+                              {activeTab === 'user' && <User size={16} className="mr-3 text-purple-500" />}
                               <div>
-                                <div className="font-medium text-gray-900">{item.title}</div>
+                                <div className="font-medium text-gray-900">
+                                  {activeTab === 'user' ? (item.name || `User ${item.id}`) : item.title}
+                                </div>
                                 {activeTab === 'berita' && (
                                   <div className="text-sm text-gray-500 mt-1 line-clamp-2">
-                                    {item.excerpt}
+                                    {item.category ? `${item.category} • ` : ''}{item.excerpt || item.author || '-'}
                                   </div>
                                 )}
                               </div>
@@ -498,11 +681,17 @@ const Dashboard = () => {
                           </td>
                           <td>
                             <div className="text-sm text-gray-900">
-                              {new Date(item.date).toLocaleDateString('id-ID', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric'
-                              })}
+                              {activeTab === 'user'
+                                ? (item.email || '-')
+                                : activeTab === 'berita'
+                                  ? (item.published_at
+                                      ? new Date(item.published_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                                      : '-')
+                                  : new Date(item.date).toLocaleDateString('id-ID', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    })}
                               {activeTab === 'agenda' && item.time && (
                                 <div className="text-sm text-gray-500">{item.time}</div>
                               )}
@@ -513,21 +702,52 @@ const Dashboard = () => {
                               <div className="text-sm text-gray-900">{item.location}</div>
                             </td>
                           )}
+                          {activeTab === 'user' && (
+                            <td>
+                              {resetRequests.some(req => req.user_id === item.id) ? (
+                                <span className="reset-pill pending">Menunggu reset</span>
+                              ) : (
+                                <span className="reset-pill done">Tidak ada</span>
+                              )}
+                            </td>
+                          )}
                           <td>
                             <div className="flex justify-end space-x-2">
-                              <button 
-                                className="btn-icon btn-edit"
-                                aria-label="Edit"
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button 
-                                className="btn-icon btn-delete"
-                                onClick={() => handleDeleteItem(item.id)}
-                                aria-label="Hapus"
-                              >
-                                <Trash2 size={16} />
-                              </button>
+                              {activeTab === 'user' ? (
+                                <button 
+                                  className="btn-icon btn-edit"
+                                  onClick={() => handleResetPassword(item)}
+                                  aria-label="Reset password user"
+                                >
+                                  <KeyRound size={16} />
+                                </button>
+                              ) : (
+                                <>
+                                  <button 
+                                    className="btn-icon btn-edit"
+                                    aria-label="Edit"
+                                    onClick={() => {
+                                      if (activeTab === 'agenda') {
+                                        navigate(`/admin/edit-agenda/${item.id}`);
+                                        return;
+                                      }
+                                      if (activeTab === 'berita') {
+                                        navigate(`/admin/edit-berita/${item.id}`);
+                                        return;
+                                      }
+                                    }}
+                                  >
+                                    <Edit size={16} />
+                                  </button>
+                                  <button 
+                                    className="btn-icon btn-delete"
+                                    onClick={() => handleDeleteItem(item.id)}
+                                    aria-label="Hapus"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -543,11 +763,17 @@ const Dashboard = () => {
                       <h3>Belum ada berita</h3>
                       <p>Tambahkan berita baru dengan menekan tombol "Tambah Baru"</p>
                     </>
-                  ) : (
+                  ) : activeTab === 'agenda' ? (
                     <>
                       <Calendar size={48} className="empty-icon" />
                       <h3>Belum ada agenda</h3>
                       <p>Tambahkan agenda baru dengan menekan tombol "Tambah Baru"</p>
+                    </>
+                  ) : (
+                    <>
+                      <User size={48} className="empty-icon" />
+                      <h3>Belum ada user</h3>
+                      <p>Data user akan tampil di sini ketika integrasi API sudah ditambahkan.</p>
                     </>
                   )}
                 </div>
@@ -556,13 +782,13 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-      </main>
+    </main>
 
-      {/* Add New Item Modal */}
-      {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+    {/* Add New Item Modal */}
+    {showAddModal && (
+      <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+        <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
               <h2 className="text-xl font-semibold text-gray-800">
                 {modalType === 'kategori' && 'Tambah Kategori'}
                 {modalType === 'galeri' && 'Tambah Galeri'}
@@ -578,7 +804,7 @@ const Dashboard = () => {
                 <X size={24} />
               </button>
             </div>
-            <div className="modal-body">
+          <div className="modal-body">
               {modalType === 'kategori' && (
                 <>
                   <div className="form-group">
@@ -705,39 +931,6 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              {activeTab === 'galeri' && (
-                <div className="form-group">
-                  <label className="form-label">Gambar</label>
-                  <div className="file-upload">
-                    <label className="file-upload-label">
-                      <input 
-                        type="file" 
-                        className="file-upload-input"
-                        accept="image/*"
-                        onChange={(e) => setNewItem({...newItem, image: e.target.files[0]})}
-                      />
-                      <div className="file-upload-content">
-                        {newItem.image ? (
-                          <>
-                            <img 
-                              src={URL.createObjectURL(newItem.image)} 
-                              alt="Preview" 
-                              className="file-upload-preview"
-                            />
-                            <span className="file-upload-name">{newItem.image.name}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Plus size={32} className="text-gray-400 mb-2" />
-                            <span className="text-sm text-gray-500">Klik untuk mengunggah gambar</span>
-                            <span className="text-xs text-gray-400 mt-1">Format: JPG, PNG (Maks. 5MB)</span>
-                          </>
-                        )}
-                      </div>
-                    </label>
-                  </div>
-                </div>
-              )}
               
               {(activeTab === 'berita' || activeTab === 'agenda') && (
                 <div className="form-group">
@@ -795,11 +988,11 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-            <div className="modal-footer">
+          <div className="modal-footer">
               <button 
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => setShowAddModal(false)}
+                onClick={closeModal}
               >
                 Batal
               </button>
@@ -818,11 +1011,21 @@ const Dashboard = () => {
                   <Plus size={18} className="mr-2" /> {saving ? 'Mengunggah...' : 'Simpan Foto'}
                 </button>
               )}
+              {modalType === 'agenda' && (
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  disabled={saving || !newItem.title || !newItem.date}
+                  onClick={handleAgendaSaveClick}
+                >
+                  <Plus size={18} className="mr-2" /> {saving ? 'Menyimpan...' : 'Simpan Agenda'}
+                </button>
+              )}
             </div>
-          </div>
         </div>
-      )}
-    </div>
+      </div>
+    )}
+  </div>
   );
 };
 

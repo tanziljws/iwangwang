@@ -130,6 +130,51 @@
 }
 .auth-link:hover { text-decoration: underline; }
 
+/* Layout and pills for Daftar / Login */
+.nav-auth-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.nav-auth-right .auth-link {
+  font-size: 0.95rem;
+  padding: 6px 18px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Primary pill: Daftar (first) */
+.nav-auth-right .auth-link:first-child {
+  background: #ffffff;
+  color: #1a56db;
+  border-color: #ffffff;
+}
+
+.nav-auth-right .auth-link:first-child:hover {
+  text-decoration: none;
+  background: #e5edff;
+  border-color: #e5edff;
+}
+
+/* Ghost pill: Login (second) */
+.nav-auth-right .auth-link:last-child {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.nav-auth-right .auth-link:last-child:hover {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.24);
+}
+
 .user-pill { display: inline-flex; align-items: center; gap: 8px; color: #ffffff; text-decoration: none; }
 .avatar-circle {
   width: 32px; height: 32px; border-radius: 999px;

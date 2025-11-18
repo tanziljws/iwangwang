@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { FaCalendarAlt, FaArrowRight, FaMapMarkerAlt, FaClock, FaUser, FaNewspaper, FaPhone, FaEnvelope, FaPaperPlane } from 'react-icons/fa';
 import '../styles/Home.css';
+
+const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api').replace(/\/$/, '');
+const ORIGIN_BASE = (import.meta?.env?.VITE_ORIGIN_BASE || 'http://localhost:8000').replace(/\/$/, '');
+
+const resolveMediaImage = (imagePath) => {
+  if (!imagePath) return '/images/agenda/placeholder.jpg';
+  if (imagePath.startsWith('http')) return imagePath;
+  const normalized = imagePath.startsWith('storage/') ? imagePath : `storage/${imagePath}`;
+  return `${ORIGIN_BASE}/${normalized}`;
+};
 
 const Home = () => {
   // State untuk form kontak
@@ -10,6 +20,14 @@ const Home = () => {
     email: '',
     message: ''
   });
+
+  const [agendaItems, setAgendaItems] = useState([]);
+  const [agendaLoading, setAgendaLoading] = useState(true);
+  const [agendaError, setAgendaError] = useState('');
+
+  const [newsItems, setNewsItems] = useState([]);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [newsError, setNewsError] = useState('');
 
   // Fungsi untuk menangani perubahan input
   const handleInputChange = (e) => {
@@ -40,13 +58,84 @@ const Home = () => {
       button.classList.remove('active');
     }, 200);
   };
+
+  useEffect(() => {
+    const fetchAgenda = async () => {
+      try {
+        setAgendaLoading(true);
+        const res = await fetch(`${API_BASE}/agendas`);
+        if (!res.ok) throw new Error('Gagal memuat agenda');
+        const data = await res.json();
+        setAgendaItems(Array.isArray(data) ? data : []);
+        setAgendaError('');
+      } catch (err) {
+        setAgendaError(err.message || 'Gagal memuat agenda');
+      } finally {
+        setAgendaLoading(false);
+      }
+    };
+
+    fetchAgenda();
+  }, []);
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setNewsLoading(true);
+        const res = await fetch(`${API_BASE}/berita`);
+        if (!res.ok) throw new Error('Gagal memuat berita');
+        const data = await res.json();
+        setNewsItems(Array.isArray(data) ? data : []);
+        setNewsError('');
+      } catch (err) {
+        setNewsError(err.message || 'Gagal memuat berita');
+      } finally {
+        setNewsLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, []);
+
+  const nearestAgenda = useMemo(() => {
+    return agendaItems
+      .slice()
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+      .slice(0, 3);
+  }, [agendaItems]);
+
+  const formatFullDate = (dateString) => {
+    try {
+      return new Date(dateString).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <div className="home" style={{ width: '100%', margin: 0, padding: 0 }}>
       {/* Hero Section */}
       <section className="hero">
         <div className="container">
           <div className="hero-content hero-centered">
-            {/* hero text removed as requested */}
+            <div className="hero-background-shapes" aria-hidden="true">
+              <span className="decorative-circle circle-1"></span>
+              <span className="decorative-circle circle-2"></span>
+              <span className="decorative-circle circle-3"></span>
+              <span className="decorative-circle circle-4"></span>
+              <span className="decorative-circle circle-5"></span>
+              <span className="decorative-line line-1"></span>
+              <span className="decorative-line line-2"></span>
+              <span className="decorative-line line-3"></span>
+            </div>
+            <h1 className="hero-title hero-title-minimal">Website Gallery</h1>
+            <p className="hero-subtitle">
+              Arsip visual kegiatan, prestasi, dan momen penting SMKN 4 Bogor yang dapat dinikmati kapan saja.
+            </p>
           </div>
         </div>
       </section>
@@ -232,53 +321,50 @@ const Home = () => {
           </div>
           
           <div className="agenda-grid">
-            {[
-              {
-                id: 1,
-                title: 'Pembelajaran Tatap Muka',
-                date: '25 Okt 2023',
-                time: '07:30 - 14:00 WIB',
-                location: 'SMKN 4 Bogor',
-                type: 'academic'
-              },
-              {
-                id: 2,
-                title: 'Workshop Teknologi',
-                date: '28 Okt 2023',
-                time: '09:00 - 15:00 WIB',
-                location: 'Aula Utama',
-                type: 'workshop'
-              },
-              {
-                id: 3,
-                title: 'Bimbingan Karir',
-                date: '30 Okt 2023',
-                time: '08:00 - 12:00 WIB',
-                location: 'Ruang Multimedia',
-                type: 'career'
-              }
-            ].map((event) => (
-              <div key={event.id} className="agenda-card">
-                <div className="agenda-image">
-                  <img src="/images/hero-bg.jpg" alt={event.title} />
-                  <div className="agenda-date">
-                    <span className="day">{event.date.split(' ')[0]}</span>
-                    <span className="month">{event.date.split(' ')[1]} {event.date.split(' ')[2]}</span>
-                  </div>
-                </div>
-                <div className="agenda-content">
-                  <h3>{event.title}</h3>
-                  <div className="agenda-meta">
-                    <span className="agenda-time">
-                      <FaClock /> {event.time}
-                    </span>
-                    <span className="agenda-location">
-                      <FaMapMarkerAlt /> {event.location}
-                    </span>
-                  </div>
-                </div>
+            {agendaLoading && (
+              <div className="agenda-loading" style={{ gridColumn: '1 / -1' }}>
+                Memuat agenda terdekat...
               </div>
-            ))}
+            )}
+            {!agendaLoading && agendaError && (
+              <div className="agenda-error" style={{ gridColumn: '1 / -1' }}>{agendaError}</div>
+            )}
+            {!agendaLoading && !agendaError && nearestAgenda.length === 0 && (
+              <div className="agenda-empty" style={{ gridColumn: '1 / -1' }}>
+                Belum ada agenda yang dijadwalkan.
+              </div>
+            )}
+            {!agendaLoading && !agendaError && nearestAgenda.map((event) => {
+              const dateObj = new Date(event.date);
+              const dayLabel = isNaN(dateObj) ? event.date : dateObj.getDate();
+              const monthLabel = isNaN(dateObj)
+                ? ''
+                : dateObj.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+
+              return (
+                <div key={event.id} className="agenda-card agenda-card-flat">
+                  <div className="agenda-date agenda-date-pill">
+                    <span className="day">{dayLabel}</span>
+                    <span className="month">{monthLabel}</span>
+                  </div>
+                  <div className="agenda-content">
+                    <h3>{event.title}</h3>
+                    <div className="agenda-meta">
+                      <span className="agenda-time">
+                        <FaClock /> {event.time || 'Waktu menyusul'}
+                      </span>
+                      <span className="agenda-location">
+                        <FaMapMarkerAlt /> {event.location || 'Lokasi menyusul'}
+                      </span>
+                    </div>
+                    <p className="agenda-description-home">{event.description || '-'}</p>
+                    <div className="agenda-footer-meta">
+                      <FaCalendarAlt /> {formatFullDate(event.date)}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -300,54 +386,35 @@ const Home = () => {
           </div>
           
           <div className="news-grid">
-            {[
-              {
-                id: 1,
-                title: 'Prestasi Gemilang di Kompetisi Nasional',
-                excerpt: 'Siswa SMKN 4 Bogor berhasil meraih juara 1 dalam kompetisi pemrograman tingkat nasional yang diselenggarakan di Jakarta.',
-                date: '22 Oktober 2023',
-                author: 'Admin',
-                category: 'Prestasi',
-                image: '/images/hero-bg.jpg'
-              },
-              {
-                id: 2,
-                title: 'Kerjasama dengan Industri Teknologi',
-                excerpt: 'Sekolah menjalin kerjasama dengan perusahaan teknologi ternama untuk program magang siswa dan pengembangan kurikulum.',
-                date: '20 Oktober 2023',
-                author: 'Admin',
-                category: 'Kerjasama',
-                image: '/images/hero-bg.jpg'
-              },
-              {
-                id: 3,
-                title: 'Workshop Teknologi Terbaru',
-                excerpt: 'Mengadakan workshop tentang teknologi AI dan Machine Learning untuk meningkatkan kompetensi siswa di bidang teknologi.',
-                date: '18 Oktober 2023',
-                author: 'Admin',
-                category: 'Workshop',
-                image: '/images/hero-bg.jpg'
-              }
-            ].map((news) => (
+            {newsLoading && (
+              <div className="agenda-loading" style={{ gridColumn: '1 / -1' }}>Memuat berita...</div>
+            )}
+            {!newsLoading && newsError && (
+              <div className="agenda-error" style={{ gridColumn: '1 / -1' }}>{newsError}</div>
+            )}
+            {!newsLoading && !newsError && newsItems.length === 0 && (
+              <div className="agenda-empty" style={{ gridColumn: '1 / -1' }}>Belum ada berita.</div>
+            )}
+            {!newsLoading && !newsError && newsItems.map((news) => (
               <article key={news.id} className="news-card">
                 <div className="news-image">
-                  <img src={news.image} alt={news.title} />
-                  <div className="news-category">{news.category}</div>
+                  <img src={resolveMediaImage(news.cover_image)} alt={news.title} />
+                  {news.category && <div className="news-category">{news.category}</div>}
                 </div>
                 <div className="news-content">
                   <div className="news-meta">
                     <span className="news-date">
-                      <FaCalendarAlt /> {news.date}
+                      <FaCalendarAlt /> {news.published_at ? formatFullDate(news.published_at) : '-'}
                     </span>
                     <span className="news-author">
-                      <FaUser /> {news.author}
+                      <FaUser /> {news.author || 'Admin'}
                     </span>
                   </div>
                   <h3>{news.title}</h3>
-                  <p>{news.excerpt}</p>
-                  <Link to={`/news/${news.id}`} className="read-more">
+                  <p>{news.excerpt || news.content?.slice(0, 140) + (news.content?.length > 140 ? '...' : '')}</p>
+                  <button className="read-more" type="button" disabled>
                     Baca Selengkapnya <FaArrowRight />
-                  </Link>
+                  </button>
                 </div>
               </article>
             ))}

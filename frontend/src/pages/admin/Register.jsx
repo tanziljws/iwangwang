@@ -7,7 +7,8 @@ const Register = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    jabatan: 'admin'
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -45,7 +46,7 @@ const Register = () => {
           password: formData.password,
           password_confirmation: formData.confirmPassword,
           no_hp: '',
-          jabatan: 'admin',
+          jabatan: formData.jabatan || 'admin',
           status: 'aktif'
         }),
       });
@@ -75,9 +76,12 @@ const Register = () => {
   if (success) {
     return (
       <div className="admin-auth-container">
-        <div className="admin-auth-box success">
-          <h2>Registration Successful!</h2>
-          <p>You will be redirected to the login page shortly...</p>
+        <div className="admin-auth-card success">
+          <div className="admin-auth-logo" aria-hidden="true">
+            <img src="/images/smkn4.jpg" alt="Logo SMKN 4" />
+          </div>
+          <h2>Pendaftaran berhasil!</h2>
+          <p>Anda akan diarahkan ke halaman login sebentar lagi...</p>
         </div>
       </div>
     );
@@ -85,12 +89,16 @@ const Register = () => {
 
   return (
     <div className="admin-auth-container">
-      <div className="admin-auth-box">
-        <h2>Admin Registration</h2>
+      <div className="admin-auth-card">
+        <div className="admin-auth-logo" aria-hidden="true">
+          <img src="/images/smkn4.jpg" alt="Logo SMKN 4" />
+        </div>
+        <h2 className="admin-auth-title">Buat Akun Admin</h2>
+        <p className="admin-auth-subtitle">Isi data berikut untuk mengaktifkan akun admin sekolah.</p>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Full Name</label>
+            <label>Nama lengkap</label>
             <input
               type="text"
               name="name"
@@ -121,7 +129,7 @@ const Register = () => {
             />
           </div>
           <div className="form-group">
-            <label>Confirm Password</label>
+            <label>Konfirmasi password</label>
             <input
               type="password"
               name="confirmPassword"
@@ -131,11 +139,25 @@ const Register = () => {
               required
             />
           </div>
-          <button type="submit" className="btn-primary">Register</button>
+          <div className="form-group">
+            <label>Jabatan</label>
+            <input
+              type="text"
+              name="jabatan"
+              value={formData.jabatan}
+              onChange={handleChange}
+              placeholder="Contoh: Admin Galeri"
+              required
+            />
+          </div>
+          <button type="submit" className="btn-primary">Daftar</button>
         </form>
-        <p className="auth-link">
-          Already have an account? <span onClick={() => navigate('/admin/login')}>Login here</span>
-        </p>
+        <div className="auth-link">
+          <span>Sudah punya akun?</span>{' '}
+          <button type="button" onClick={() => navigate('/admin/login')}>
+            Masuk di sini
+          </button>
+        </div>
       </div>
     </div>
   );

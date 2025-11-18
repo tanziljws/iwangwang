@@ -4,12 +4,25 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\PasswordResetRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class UserAuthController extends Controller
 {
+    public function index()
+    {
+        // List all registered users for admin dashboard
+        $users = User::select('id', 'name', 'email', 'created_at')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json($users);
+    }
+
     private function verifyRecaptcha(?string $token): bool
     {
         // Skip verification on local/non-production environments for development convenience
@@ -65,6 +78,68 @@ class UserAuthController extends Controller
             'token' => $token,
             'token_type' => 'Bearer',
         ], 201);
+    }
+
+    public function resetPassword(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'new_password' => 'nullable|string|min:6',
+        ]);
+
+        $newPassword = $validated['new_password'] ?? Str::random(10);
+
+        $user->password = Hash::make($newPassword);
+        $user->save();
+
+        PasswordResetRequest::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'completed',
+                'handled_at' => now(),
+            ]);
+
+        return response()->json([
+            'message' => 'Password berhasil direset',
+            'password' => $newPassword,
+        ]);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $user = User::where('email', $validated['email'])->first();
+        if (! $user) {
+            return response()->json([
+                'message' => 'Email tidak ditemukan'
+            ], 404);
+        }
+
+        PasswordResetRequest::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'status' => 'pending',
+            ],
+            [
+                'email' => $user->email,
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Permintaan reset password sudah dikirim ke admin. Silakan tunggu konfirmasi.'
+        ]);
+    }
+
+    public function resetRequests()
+    {
+        $requests = PasswordResetRequest::with('user')
+            ->where('status', 'pending')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json($requests);
     }
 
     public function login(Request $request)
