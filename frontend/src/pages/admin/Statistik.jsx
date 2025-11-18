@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Image, Layers, Newspaper, Calendar } from 'lucide-react';
+import { Image, Layers, Newspaper, Calendar, Users } from 'lucide-react';
 import './Statistik.css';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api').replace(/\/$/, '');
 
 const Statistik = () => {
   const navigate = useNavigate();
-  const [counts, setCounts] = useState({ galeri: 0, kategori: 0, berita: 2, agenda: 2 });
+  const [counts, setCounts] = useState({ galeri: 0, kategori: 0, berita: 0, agenda: 0, pengunjung: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -20,21 +22,51 @@ const Statistik = () => {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [galeriRes, kategoriRes] = await Promise.all([
-          fetch(`${API_BASE}/galeri`),
-          fetch(`${API_BASE}/kategori`),
+        setLoading(true);
+        setError('');
+        const token = localStorage.getItem('adminToken');
+        const authHeaders = token
+          ? { Authorization: `Bearer ${token}`, Accept: 'application/json' }
+          : { Accept: 'application/json' };
+
+        const fetchJson = async (path, options = {}) => {
+          const res = await fetch(path, {
+            headers: { ...authHeaders, ...(options.headers || {}) },
+            ...options,
+          });
+          if (!res.ok) {
+            const details = await res.json().catch(() => ({}));
+            throw new Error(details.message || `Gagal memuat ${path}`);
+          }
+          return res.json();
+        };
+
+        const [galeriData, kategoriData, beritaData, agendaData] = await Promise.all([
+          fetchJson(`${API_BASE}/galeri`),
+          fetchJson(`${API_BASE}/kategori`),
+          fetchJson(`${API_BASE}/berita`),
+          fetchJson(`${API_BASE}/agendas`),
         ]);
 
-        const galeriData = await galeriRes.json();
-        const kategoriData = await kategoriRes.json();
+        let pengunjungCount = 0;
+        try {
+          const usersData = await fetchJson(`${API_BASE}/users`);
+          pengunjungCount = Array.isArray(usersData) ? usersData.length : 0;
+        } catch (err) {
+          console.warn('Gagal memuat data pengunjung:', err);
+        }
 
-        setCounts(prev => ({
-          ...prev,
+        setCounts({
           galeri: Array.isArray(galeriData) ? galeriData.length : 0,
           kategori: Array.isArray(kategoriData) ? kategoriData.length : 0,
-        }));
+          berita: Array.isArray(beritaData) ? beritaData.length : 0,
+          agenda: Array.isArray(agendaData) ? agendaData.length : 0,
+          pengunjung: pengunjungCount,
+        });
       } catch (e) {
-        console.error('Gagal memuat statistik', e);
+        setError(e.message || 'Gagal memuat statistik');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -54,6 +86,13 @@ const Statistik = () => {
           Kembali ke Dashboard
         </button>
       </header>
+
+      {loading && (
+        <div className="statistik-alert info">Memuat data statistik terbaru...</div>
+      )}
+      {!loading && error && (
+        <div className="statistik-alert error">{error}</div>
+      )}
 
       <section className="statistik-grid">
         <div className="statistik-card primary">
@@ -96,13 +135,23 @@ const Statistik = () => {
           <div className="statistik-value">{counts.agenda}</div>
           <div className="statistik-sub">Agenda dan jadwal kegiatan</div>
         </div>
+        <div className="statistik-card">
+          <div className="statistik-card-header">
+            <span className="statistik-icon-badge neutral">
+              <Users size={18} />
+            </span>
+            <span className="statistik-label">Total Pengunjung</span>
+          </div>
+          <div className="statistik-value">{counts.pengunjung}</div>
+          <div className="statistik-sub">Akun pengguna/pengunjung yang terdaftar</div>
+        </div>
       </section>
 
       <section className="statistik-secondary">
         <div className="statistik-chart-card">
           <div className="statistik-chart-header">
             <h2>Aktivitas Konten</h2>
-            <span className="statistik-chart-period">7 hari terakhir (dummy)</span>
+            <span className="statistik-chart-period">Data diperbarui saat halaman dimuat</span>
           </div>
           <div className="statistik-chart-placeholder">
             <div className="statistik-chart-line" />
@@ -133,6 +182,7 @@ const Statistik = () => {
               <li><strong>{counts.kategori}</strong> kategori aktif</li>
               <li><strong>{counts.berita}</strong> berita dipublikasikan</li>
               <li><strong>{counts.agenda}</strong> agenda terjadwal</li>
+              <li><strong>{counts.pengunjung}</strong> pengunjung terdaftar</li>
             </ul>
           </div>
         </div>

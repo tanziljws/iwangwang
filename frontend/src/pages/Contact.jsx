@@ -8,7 +8,7 @@ const Contact = () => {
       <div className="contact-container">
         <div className="contact-header">
           <h1>Kontak Kami</h1>
-          <p>Hubungi kami untuk informasi lebih lanjut</p>
+          <p>Hubungi SMKN 4 Bogor untuk informasi lebih lanjut</p>
         </div>
 
         <div className="contact-content">
@@ -19,7 +19,7 @@ const Contact = () => {
               </div>
               <div className="info-text">
                 <h3>Alamat</h3>
-                <p>Jl. Raya Pajajaran No. 84, Bogor Tengah, Kota Bogor, Jawa Barat 16128</p>
+                <p>Jl. Raya Tajur No. 4, Muarasari, Bogor Selatan, Kota Bogor, Jawa Barat 16137</p>
               </div>
             </div>
 
@@ -29,8 +29,8 @@ const Contact = () => {
               </div>
               <div className="info-text">
                 <h3>Telepon</h3>
-                <p>+62 251 832-1744</p>
-                <p>+62 813-8000-0000 (WA)</p>
+                <p>+62 251 835-2104</p>
+                <p>+62 813-8884-7400 (WA)</p>
               </div>
             </div>
 
@@ -40,7 +40,7 @@ const Contact = () => {
               </div>
               <div className="info-text">
                 <h3>Email</h3>
-                <p>info@smkn1bogor.sch.id</p>
+                <p>info@smkn4bogor.sch.id</p>
               </div>
             </div>
 
@@ -50,7 +50,7 @@ const Contact = () => {
               </div>
               <div className="info-text">
                 <h3>Jam Operasional</h3>
-                <p>Senin - Jumat: 07:00 - 15:00 WIB</p>
+                <p>Senin - Jumat: 07:00 - 15:30 WIB</p>
                 <p>Sabtu: 08:00 - 12:00 WIB</p>
                 <p>Minggu & Tanggal Merah: Tutup</p>
               </div>
@@ -59,13 +59,14 @@ const Contact = () => {
 
           <div className="contact-map">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.073647866012!2d106.79807231529462!3d-6.637383366254416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c5d1a5d9f8b5%3A0x5f5f5f5f5f5f5f5f!2sSMK%20Negeri%201%20Kota%20Bogor!5e0!3m2!1sen!2sid!4v1620000000000!5m2!1sen!2sid"
+              src="https://maps.google.com/maps?q=SMK%20Negeri%204%20Bogor&t=&z=17&ie=UTF8&iwloc=&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0 }}
               allowFullScreen=""
               loading="lazy"
-              title="Lokasi SMK Negeri 1 Kota Bogor"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Lokasi SMK Negeri 4 Bogor"
             ></iframe>
           </div>
         </div>

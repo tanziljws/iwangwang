@@ -13,6 +13,7 @@ import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
 import Agenda from './pages/Agenda';
 import Berita from './pages/Berita';
+import BeritaDetail from './pages/BeritaDetail';
 import UserLogin from './pages/UserLogin';
 import UserRegister from './pages/UserRegister';
 import UserAccount from './pages/UserAccount';
@@ -172,6 +173,7 @@ function App() {
             <Route path="/register" element={<UserRegister />} />
             <Route path="/account" element={<ProtectedUserRoute><UserAccount /></ProtectedUserRoute>} />
             <Route path="/berita" element={<Berita />} />
+            <Route path="/berita/:id" element={<BeritaDetail />} />
             <Route path="/news" element={<Berita />} />
             <Route path="/agenda" element={<Agenda />} />
             <Route path="/contact" element={<Contact />} />

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { FaCalendarAlt, FaUser, FaArrowRight, FaNewspaper } from 'react-icons/fa';
 import '../styles/Berita.css';
 import '../styles/Home.css';
@@ -87,9 +88,9 @@ const Berita = () => {
                 </div>
                 <h3>{news.title}</h3>
                 <p>{news.excerpt || news.content?.slice(0, 160) + (news.content?.length > 160 ? '...' : '')}</p>
-                <button className="read-more" type="button" disabled>
+                <Link to={`/berita/${news.id}`} className="read-more">
                   Baca Selengkapnya <FaArrowRight />
-                </button>
+                </Link>
               </div>
             </article>
           ))}

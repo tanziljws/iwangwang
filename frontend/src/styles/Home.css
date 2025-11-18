@@ -3491,6 +3491,41 @@ body {
   flex: 1;
 }
 
+/* Home agenda specific tweaks: badge smaller and placed above text */
+.home-agenda-section .agenda-card-flat {
+  padding-top: 1.25rem;
+}
+
+.home-agenda-section .agenda-card-flat .agenda-date,
+.home-agenda-section .agenda-card-flat .agenda-date-pill,
+.home-agenda-section .agenda-card-flat .agenda-date-badge {
+  position: static;
+  margin: -0.75rem 0 0.5rem 1.5rem;
+  align-self: flex-start;
+  min-width: 38px;
+  padding: 0.18rem 0.45rem;
+  border-radius: 8px;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.18);
+}
+
+.home-agenda-section .agenda-card-flat .agenda-date .day,
+.home-agenda-section .agenda-card-flat .agenda-date-pill .day,
+.home-agenda-section .agenda-card-flat .agenda-date-badge .day {
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+}
+
+.home-agenda-section .agenda-card-flat .agenda-date .month,
+.home-agenda-section .agenda-card-flat .agenda-date-pill .month,
+.home-agenda-section .agenda-card-flat .agenda-date-badge .month {
+  font-size: 0.4rem;
+  letter-spacing: 0.08em;
+}
+
+.home-agenda-section .agenda-card-flat .agenda-content {
+  padding: 1rem 1.5rem 1.5rem;
+}
+
 .agenda-content h3 {
   color: #1e40af;
   margin-bottom: 0.75rem;

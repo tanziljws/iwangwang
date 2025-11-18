@@ -412,9 +412,9 @@ const Home = () => {
                   </div>
                   <h3>{news.title}</h3>
                   <p>{news.excerpt || news.content?.slice(0, 140) + (news.content?.length > 140 ? '...' : '')}</p>
-                  <button className="read-more" type="button" disabled>
+                  <Link to={`/berita/${news.id}`} className="read-more">
                     Baca Selengkapnya <FaArrowRight />
-                  </button>
+                  </Link>
                 </div>
               </article>
             ))}
