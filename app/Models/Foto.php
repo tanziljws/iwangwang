@@ -103,19 +103,35 @@ class Foto extends Model
     private function getBaseUrl()
     {
         // Try to get from request first (for API calls)
-        if (app()->runningInConsole() === false && request()) {
-            $scheme = request()->getScheme();
-            $host = request()->getHost();
-            $port = request()->getPort();
-            
-            if ($port && !in_array($port, [80, 443])) {
-                return $scheme . '://' . $host . ':' . $port;
+        try {
+            if (app()->runningInConsole() === false) {
+                $request = request();
+                if ($request) {
+                    // Use url() helper which respects APP_URL and request
+                    $baseUrl = url('/');
+                    // Remove trailing slash
+                    return rtrim($baseUrl, '/');
+                }
             }
-            return $scheme . '://' . $host;
+        } catch (\Exception $e) {
+            // If request is not available, continue to fallback
         }
         
-        // Fallback to config
+        // Fallback to config - check for Railway URL
         $appUrl = config('app.url', 'http://localhost:8000');
+        
+        // If APP_URL is still localhost, try to detect from environment
+        if (strpos($appUrl, 'localhost') !== false || strpos($appUrl, '127.0.0.1') !== false) {
+            // Check if we're in production (Railway)
+            if (config('app.env') === 'production' || env('RAILWAY_ENVIRONMENT')) {
+                // Try to get from Railway environment variable
+                $railwayUrl = env('RAILWAY_PUBLIC_DOMAIN') 
+                    ? 'https://' . env('RAILWAY_PUBLIC_DOMAIN')
+                    : 'https://iwangwang-production.up.railway.app';
+                return rtrim($railwayUrl, '/');
+            }
+        }
+        
         // Remove trailing slash
         return rtrim($appUrl, '/');
     }
