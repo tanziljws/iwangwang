@@ -20,6 +20,8 @@ class BeritaController extends Controller
                 ->map(function ($item) {
                     // Add cover_image_url to response
                     $item->cover_image_url = $item->cover_image_url;
+                    // Also append it to make it available in JSON
+                    $item->makeVisible(['cover_image_url']);
                     return $item;
                 });
             return response()->json($berita, 200);
@@ -58,6 +60,9 @@ class BeritaController extends Controller
 
     public function show(Berita $beritum)
     {
+        // Add cover_image_url to response
+        $beritum->cover_image_url = $beritum->cover_image_url;
+        $beritum->makeVisible(['cover_image_url']);
         return response()->json($beritum, 200);
     }
 
