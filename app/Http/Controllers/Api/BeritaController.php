@@ -12,9 +12,11 @@ class BeritaController extends Controller
 {
     public function index()
     {
-        return Berita::orderByDesc('published_at')
+        $berita = Berita::where('status', 'published')
+            ->orderByDesc('published_at')
             ->orderByDesc('created_at')
             ->get();
+        return response()->json($berita, 200);
     }
 
     public function store(Request $request)
@@ -43,7 +45,7 @@ class BeritaController extends Controller
 
     public function show(Berita $beritum)
     {
-        return $beritum;
+        return response()->json($beritum, 200);
     }
 
     public function update(Request $request, Berita $beritum)

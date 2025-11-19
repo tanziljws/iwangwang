@@ -6,6 +6,9 @@ use App\Http\Controllers\GaleriController;
 use App\Http\Controllers\FotoController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\Api\AgendaController;
+use App\Http\Controllers\Api\BeritaController;
+use App\Http\Controllers\Api\GaleriApiController;
 
 // Proxy storage files to bypass Apache 403 on symlink
 Route::get('/storage/{path}', function ($path) {
@@ -26,6 +29,15 @@ Route::get('/media/{path}', function ($path) {
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// ======================= API Routes (without /api prefix) =======================
+// Public API endpoints for frontend - must be before guest routes
+Route::get('/agendas', [AgendaController::class, 'index']);
+Route::get('/agendas/{agenda}', [AgendaController::class, 'show']);
+Route::get('/berita', [BeritaController::class, 'index']);
+Route::get('/berita/{beritum}', [BeritaController::class, 'show']);
+Route::get('/api/galeri', [GaleriApiController::class, 'index']); // Use /api/galeri to avoid conflict
+Route::get('/api/galeri/{id}', [GaleriApiController::class, 'show']);
 
 // ======================= Guest Routes =======================
 Route::get('/', function () {

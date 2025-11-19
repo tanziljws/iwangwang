@@ -10,7 +10,8 @@ class AgendaController extends Controller
 {
     public function index()
     {
-        return Agenda::orderBy('date')->latest()->get();
+        $agendas = Agenda::orderBy('date')->latest()->get();
+        return response()->json($agendas, 200);
     }
 
     public function store(Request $request)
@@ -29,7 +30,7 @@ class AgendaController extends Controller
 
     public function show(Agenda $agenda)
     {
-        return $agenda;
+        return response()->json($agenda, 200);
     }
 
     public function update(Request $request, Agenda $agenda)

@@ -10,8 +10,18 @@ class GaleriApiController extends Controller
 {
     public function index()
     {
-        $items = Galeri::with(['kategori','foto'])->ordered()->get();
-        return response()->json($items, 200);
+        try {
+            $items = Galeri::with(['kategori', 'foto'])
+                ->where('status', 1)
+                ->ordered()
+                ->get();
+            return response()->json($items, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch galeri',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
