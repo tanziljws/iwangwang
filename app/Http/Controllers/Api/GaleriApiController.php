@@ -19,14 +19,21 @@ class GaleriApiController extends Controller
                 ->get();
             
             // Load relationships separately to avoid N+1 and catch errors
-            $items->load([
-                'kategori:id,nama,slug,deskripsi,icon',
-                'foto' => function($query) {
-                    $query->where('status', 1)
-                          ->orderBy('urutan')
-                          ->orderBy('judul');
-                }
-            ]);
+            try {
+                $items->load([
+                    'kategori' => function($query) {
+                        $query->select('id', 'nama', 'slug', 'deskripsi', 'icon');
+                    },
+                    'foto' => function($query) {
+                        $query->where('status', 1)
+                              ->orderBy('urutan')
+                              ->orderBy('judul');
+                    }
+                ]);
+            } catch (\Exception $relError) {
+                Log::warning('Failed to load relationships: ' . $relError->getMessage());
+                // Continue without relationships if they fail
+            }
             
             return response()->json($items, 200);
         } catch (\Exception $e) {
