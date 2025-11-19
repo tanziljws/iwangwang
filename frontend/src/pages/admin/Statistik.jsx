@@ -8,6 +8,7 @@ const API_BASE = (import.meta?.env?.VITE_API_BASE || 'http://localhost:8000/api'
 const Statistik = () => {
   const navigate = useNavigate();
   const [counts, setCounts] = useState({ galeri: 0, kategori: 0, berita: 0, agenda: 0, pengunjung: 0 });
+  const [categoryDist, setCategoryDist] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -56,9 +57,29 @@ const Statistik = () => {
           console.warn('Gagal memuat data pengunjung:', err);
         }
 
+        const galeriSafe = Array.isArray(galeriData) ? galeriData : [];
+        const kategoriSafe = Array.isArray(kategoriData) ? kategoriData : [];
+
+        const kategoriCountMap = galeriSafe.reduce((acc, item) => {
+          const key = item?.kategori_id;
+          if (!key) return acc;
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {});
+
+        const distribution = kategoriSafe
+          .map((kategori) => ({
+            id: kategori.id,
+            label: kategori.nama || 'Tanpa Nama',
+            count: kategoriCountMap[kategori.id] || 0,
+          }))
+          .filter((item) => item.count > 0);
+
+        setCategoryDist(distribution);
+
         setCounts({
-          galeri: Array.isArray(galeriData) ? galeriData.length : 0,
-          kategori: Array.isArray(kategoriData) ? kategoriData.length : 0,
+          galeri: galeriSafe.length,
+          kategori: kategoriSafe.length,
           berita: Array.isArray(beritaData) ? beritaData.length : 0,
           agenda: Array.isArray(agendaData) ? agendaData.length : 0,
           pengunjung: pengunjungCount,
@@ -166,15 +187,7 @@ const Statistik = () => {
         </div>
 
         <div className="statistik-side-cards">
-          <div className="statistik-mini-card">
-            <div className="mini-label">Proporsi Galeri per Kategori</div>
-            <div className="mini-badges">
-              <span className="mini-badge blue" />
-              <span className="mini-badge cyan" />
-              <span className="mini-badge gray" />
-            </div>
-            <p className="mini-caption">Ilustrasi visual sederhana, bisa diisi grafik sungguhan nanti.</p>
-          </div>
+          <CategoryDistributionCard data={categoryDist} total={counts.galeri} loading={loading} />
           <div className="statistik-mini-card">
             <div className="mini-label">Snapshot Data</div>
             <ul className="mini-list">
@@ -187,6 +200,70 @@ const Statistik = () => {
           </div>
         </div>
       </section>
+    </div>
+  );
+};
+
+const colorPalette = ['#2563eb', '#0ea5e9', '#14b8a6', '#f97316', '#a78bfa', '#94a3b8'];
+
+const CategoryDistributionCard = ({ data, total, loading }) => {
+  const hasData = total > 0 && data.length > 0;
+  const segments = hasData
+    ? data.map((item, index) => ({
+        ...item,
+        color: colorPalette[index % colorPalette.length],
+        percentage: ((item.count / total) * 100).toFixed(1),
+      }))
+    : [];
+
+  let cumulative = 0;
+  const gradientStops = segments
+    .map((segment) => {
+      const start = cumulative;
+      cumulative += Number(segment.percentage);
+      return `${segment.color} ${start}% ${Math.min(cumulative, 100)}%`;
+    })
+    .join(', ');
+
+  return (
+    <div className="statistik-mini-card distribution-card">
+      <div className="mini-label">Proporsi Galeri per Kategori</div>
+      <div className="distribution-content">
+        <div
+          className={`distribution-donut ${!hasData ? 'empty' : ''}`}
+          aria-label="Diagram proporsi galeri per kategori"
+          role="img"
+          style={hasData ? { background: `conic-gradient(${gradientStops})` } : undefined}
+        >
+          <div className="distribution-donut-center">
+            {loading ? (
+              <span>...</span>
+            ) : (
+              <>
+                <strong>{total}</strong>
+                <small>galeri</small>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="distribution-legend">
+          {loading && <p className="mini-caption">Memuat proporsi kategori...</p>}
+          {!loading && !hasData && (
+            <p className="mini-caption">Belum ada data galeri untuk ditampilkan.</p>
+          )}
+          {!loading && hasData && (
+            <ul>
+              {segments.map((segment) => (
+                <li key={segment.id}>
+                  <span className="legend-dot" style={{ backgroundColor: segment.color }} />
+                  <span className="legend-label">{segment.label}</span>
+                  <span className="legend-value">{segment.percentage}%</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

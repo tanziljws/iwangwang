@@ -365,6 +365,15 @@
   .nav-auth-right .auth-link {
     width: 100%;
     justify-content: center;
+    color: #1a56db;
+    background: rgba(26, 86, 219, 0.08);
+    border-color: rgba(26, 86, 219, 0.2);
+  }
+
+  .nav-auth-right .auth-link:last-child {
+    color: #1a56db;
+    background: rgba(26, 86, 219, 0.12);
+    border-color: rgba(26, 86, 219, 0.25);
   }
 }
 
