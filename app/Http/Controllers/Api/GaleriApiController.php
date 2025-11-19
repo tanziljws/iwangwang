@@ -12,27 +12,32 @@ class GaleriApiController extends Controller
     public function index()
     {
         try {
-            // Simple query first to avoid complex relationship issues
+            // Get galeri without relationships first
             $items = Galeri::where('status', 1)
                 ->orderBy('urutan')
                 ->orderBy('nama')
                 ->get();
             
-            // Load relationships separately to avoid N+1 and catch errors
-            try {
-                $items->load([
-                    'kategori' => function($query) {
-                        $query->select('id', 'nama', 'slug', 'deskripsi', 'icon');
-                    },
-                    'foto' => function($query) {
+            // Manually load relationships with error handling
+            foreach ($items as $item) {
+                try {
+                    // Load kategori
+                    if ($item->kategori_id) {
+                        $item->load('kategori');
+                    }
+                    
+                    // Load foto with status filter
+                    $item->load(['foto' => function($query) {
                         $query->where('status', 1)
                               ->orderBy('urutan')
                               ->orderBy('judul');
-                    }
-                ]);
-            } catch (\Exception $relError) {
-                Log::warning('Failed to load relationships: ' . $relError->getMessage());
-                // Continue without relationships if they fail
+                    }]);
+                } catch (\Exception $relError) {
+                    Log::warning('Failed to load relationships for galeri ' . $item->id . ': ' . $relError->getMessage());
+                    // Set empty relationships if they fail
+                    $item->setRelation('kategori', null);
+                    $item->setRelation('foto', collect([]));
+                }
             }
             
             return response()->json($items, 200);

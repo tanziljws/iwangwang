@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class Berita extends Model
 {
@@ -41,5 +42,28 @@ class Berita extends Model
                 $berita->slug = Str::slug($berita->title) . '-' . Str::random(4);
             }
         });
+    }
+
+    /**
+     * Get the cover image URL
+     */
+    public function getCoverImageUrlAttribute()
+    {
+        if (empty($this->cover_image)) {
+            return null;
+        }
+
+        // If it's already a full URL
+        if (strpos($this->cover_image, 'http') === 0) {
+            return $this->cover_image;
+        }
+
+        // Check if file exists in storage
+        if (Storage::disk('public')->exists($this->cover_image)) {
+            return asset('storage/' . $this->cover_image);
+        }
+
+        // Fallback to old path structure
+        return asset('storage/' . $this->cover_image);
     }
 }

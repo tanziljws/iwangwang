@@ -12,11 +12,24 @@ class BeritaController extends Controller
 {
     public function index()
     {
-        $berita = Berita::where('status', 'published')
-            ->orderByDesc('published_at')
-            ->orderByDesc('created_at')
-            ->get();
-        return response()->json($berita, 200);
+        try {
+            $berita = Berita::where('status', 'published')
+                ->orderByDesc('published_at')
+                ->orderByDesc('created_at')
+                ->get()
+                ->map(function ($item) {
+                    // Add cover_image_url to response
+                    $item->cover_image_url = $item->cover_image_url;
+                    return $item;
+                });
+            return response()->json($berita, 200);
+        } catch (\Exception $e) {
+            \Log::error('Berita API Error: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to fetch berita',
+                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
     }
 
     public function store(Request $request)
