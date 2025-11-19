@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Models\Galeri;
 
 class GaleriApiController extends Controller
@@ -11,15 +12,33 @@ class GaleriApiController extends Controller
     public function index()
     {
         try {
-            $items = Galeri::with(['kategori', 'foto'])
-                ->where('status', 1)
-                ->ordered()
+            // Simple query first to avoid complex relationship issues
+            $items = Galeri::where('status', 1)
+                ->orderBy('urutan')
+                ->orderBy('nama')
                 ->get();
+            
+            // Load relationships separately to avoid N+1 and catch errors
+            $items->load([
+                'kategori:id,nama,slug,deskripsi,icon',
+                'foto' => function($query) {
+                    $query->where('status', 1)
+                          ->orderBy('urutan')
+                          ->orderBy('judul');
+                }
+            ]);
+            
             return response()->json($items, 200);
         } catch (\Exception $e) {
+            Log::error('Galeri API Error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'error' => 'Failed to fetch galeri',
-                'message' => $e->getMessage()
+                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
     }

@@ -39,8 +39,9 @@ Route::get('/berita', [BeritaController::class, 'index'])->middleware('api');
 Route::get('/berita/{beritum}', [BeritaController::class, 'show'])->middleware('api');
 Route::get('/galeri', function (\Illuminate\Http\Request $request) {
     // If request wants JSON, return API response
-    if ($request->wantsJson() || $request->expectsJson() || $request->header('Accept') === 'application/json') {
-        return app(\App\Http\Controllers\Api\GaleriApiController::class)->index();
+    if ($request->wantsJson() || $request->expectsJson() || $request->header('Accept') === 'application/json' || $request->is('api/*')) {
+        $controller = new \App\Http\Controllers\Api\GaleriApiController();
+        return $controller->index();
     }
     // Otherwise, return web view
     return app(\App\Http\Controllers\GuestController::class)->galeri();
