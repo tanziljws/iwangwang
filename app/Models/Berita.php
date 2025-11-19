@@ -58,12 +58,22 @@ class Berita extends Model
             return $this->cover_image;
         }
 
-        // Check if file exists in storage
+        // Check if file exists in storage/app/public/berita/
+        if (Storage::disk('public')->exists('berita/' . basename($this->cover_image))) {
+            return asset('storage/berita/' . basename($this->cover_image));
+        }
+
+        // Check if file exists directly in storage/app/public/
         if (Storage::disk('public')->exists($this->cover_image)) {
             return asset('storage/' . $this->cover_image);
         }
 
-        // Fallback to old path structure
-        return asset('storage/' . $this->cover_image);
+        // Fallback - return URL even if file doesn't exist (for Railway)
+        // Handle both 'berita/filename.jpg' and just 'filename.jpg'
+        $filename = basename($this->cover_image);
+        if (strpos($this->cover_image, 'berita/') === 0) {
+            return asset('storage/' . $this->cover_image);
+        }
+        return asset('storage/berita/' . $filename);
     }
 }
