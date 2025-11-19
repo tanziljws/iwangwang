@@ -12,35 +12,51 @@ class GaleriApiController extends Controller
     public function index()
     {
         try {
-            // Get galeri without relationships first
+            // Get galeri with basic query
             $items = Galeri::where('status', 1)
                 ->orderBy('urutan')
                 ->orderBy('nama')
                 ->get();
             
-            // Manually load relationships with error handling
-            foreach ($items as $item) {
+            // Transform to array to avoid relationship issues
+            $result = $items->map(function ($item) {
                 try {
-                    // Load kategori
+                    $data = $item->toArray();
+                    
+                    // Manually load kategori
                     if ($item->kategori_id) {
-                        $item->load('kategori');
+                        try {
+                            $kategori = \App\Models\Kategori::find($item->kategori_id);
+                            $data['kategori'] = $kategori ? $kategori->toArray() : null;
+                        } catch (\Exception $e) {
+                            Log::warning('Failed to load kategori for galeri ' . $item->id);
+                            $data['kategori'] = null;
+                        }
+                    } else {
+                        $data['kategori'] = null;
                     }
                     
-                    // Load foto with status filter
-                    $item->load(['foto' => function($query) {
-                        $query->where('status', 1)
-                              ->orderBy('urutan')
-                              ->orderBy('judul');
-                    }]);
-                } catch (\Exception $relError) {
-                    Log::warning('Failed to load relationships for galeri ' . $item->id . ': ' . $relError->getMessage());
-                    // Set empty relationships if they fail
-                    $item->setRelation('kategori', null);
-                    $item->setRelation('foto', collect([]));
+                    // Manually load foto
+                    try {
+                        $fotos = \App\Models\Foto::where('galeri_id', $item->id)
+                            ->where('status', 1)
+                            ->orderBy('urutan')
+                            ->orderBy('judul')
+                            ->get();
+                        $data['foto'] = $fotos->toArray();
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to load foto for galeri ' . $item->id);
+                        $data['foto'] = [];
+                    }
+                    
+                    return $data;
+                } catch (\Exception $e) {
+                    Log::error('Error processing galeri ' . $item->id . ': ' . $e->getMessage());
+                    return $item->toArray();
                 }
-            }
+            });
             
-            return response()->json($items, 200);
+            return response()->json($result, 200);
         } catch (\Exception $e) {
             Log::error('Galeri API Error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
