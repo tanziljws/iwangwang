@@ -76,17 +76,22 @@ class Foto extends Model
             return $this->file;
         }
         
+        // Check if file exists in storage/app/public/foto/
+        if (Storage::disk('public')->exists('foto/' . $this->file)) {
+            return asset('storage/foto/' . $this->file);
+        }
+        
+        // Check if file exists directly in storage/app/public/
+        if (Storage::disk('public')->exists($this->file)) {
+            return asset('storage/' . $this->file);
+        }
+        
         // Check if file exists in public/images
         if (file_exists(public_path('images/' . $this->file))) {
             return asset('images/' . $this->file);
         }
         
-        // Check if file exists in storage
-        if (file_exists(storage_path('app/public/' . $this->file))) {
-            return asset('storage/' . $this->file);
-        }
-        
-        // Fallback to old path structure if file not found
+        // Fallback - return URL even if file doesn't exist (for Railway)
         return asset('storage/foto/' . $this->file);
     }
 

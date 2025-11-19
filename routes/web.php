@@ -13,14 +13,18 @@ use App\Http\Controllers\Api\GaleriApiController;
 // Proxy storage files to bypass Apache 403 on symlink
 Route::get('/storage/{path}', function ($path) {
     $full = storage_path('app/public/' . $path);
-    abort_unless(file_exists($full), 404);
+    if (!file_exists($full)) {
+        abort(404, 'File not found');
+    }
     return response()->file($full);
 })->where('path', '.*');
 
 // Alternate media route to fully bypass any web server alias restrictions
 Route::get('/media/{path}', function ($path) {
     $full = storage_path('app/public/' . $path);
-    abort_unless(file_exists($full), 404);
+    if (!file_exists($full)) {
+        abort(404, 'File not found');
+    }
     return response()->file($full);
 })->where('path', '.*');
 

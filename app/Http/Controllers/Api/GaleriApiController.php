@@ -12,49 +12,81 @@ class GaleriApiController extends Controller
     public function index()
     {
         try {
-            // Get galeri with basic query
+            // Get galeri with basic query - no relationships
             $items = Galeri::where('status', 1)
                 ->orderBy('urutan')
                 ->orderBy('nama')
-                ->get();
+                ->get(['id', 'nama', 'deskripsi', 'kategori_id', 'status', 'urutan', 'created_at', 'updated_at']);
             
-            // Transform to array to avoid relationship issues
-            $result = $items->map(function ($item) {
+            // Transform to array and manually load relationships
+            $result = [];
+            foreach ($items as $item) {
                 try {
-                    $data = $item->toArray();
+                    $data = [
+                        'id' => $item->id,
+                        'nama' => $item->nama,
+                        'deskripsi' => $item->deskripsi,
+                        'kategori_id' => $item->kategori_id,
+                        'status' => $item->status,
+                        'urutan' => $item->urutan,
+                        'created_at' => $item->created_at,
+                        'updated_at' => $item->updated_at,
+                    ];
                     
                     // Manually load kategori
                     if ($item->kategori_id) {
                         try {
-                            $kategori = \App\Models\Kategori::find($item->kategori_id);
-                            $data['kategori'] = $kategori ? $kategori->toArray() : null;
+                            $kategori = \App\Models\Kategori::find($item->kategori_id, ['id', 'nama', 'slug', 'deskripsi', 'icon']);
+                            $data['kategori'] = $kategori ? [
+                                'id' => $kategori->id,
+                                'nama' => $kategori->nama,
+                                'slug' => $kategori->slug,
+                                'deskripsi' => $kategori->deskripsi,
+                                'icon' => $kategori->icon,
+                            ] : null;
                         } catch (\Exception $e) {
-                            Log::warning('Failed to load kategori for galeri ' . $item->id);
+                            Log::warning('Failed to load kategori for galeri ' . $item->id . ': ' . $e->getMessage());
                             $data['kategori'] = null;
                         }
                     } else {
                         $data['kategori'] = null;
                     }
                     
-                    // Manually load foto
+                    // Manually load foto with file_url
                     try {
                         $fotos = \App\Models\Foto::where('galeri_id', $item->id)
                             ->where('status', 1)
                             ->orderBy('urutan')
                             ->orderBy('judul')
-                            ->get();
-                        $data['foto'] = $fotos->toArray();
+                            ->get(['id', 'galeri_id', 'judul', 'deskripsi', 'file', 'alt_text', 'urutan', 'status']);
+                        
+                        $data['foto'] = $fotos->map(function ($foto) {
+                            $fotoData = $foto->toArray();
+                            // Add file_url
+                            $fotoData['file_url'] = $foto->file_url;
+                            return $fotoData;
+                        })->toArray();
                     } catch (\Exception $e) {
-                        Log::warning('Failed to load foto for galeri ' . $item->id);
+                        Log::warning('Failed to load foto for galeri ' . $item->id . ': ' . $e->getMessage());
                         $data['foto'] = [];
                     }
                     
-                    return $data;
+                    $result[] = $data;
                 } catch (\Exception $e) {
                     Log::error('Error processing galeri ' . $item->id . ': ' . $e->getMessage());
-                    return $item->toArray();
+                    // Add basic data even if relationships fail
+                    $result[] = [
+                        'id' => $item->id,
+                        'nama' => $item->nama,
+                        'deskripsi' => $item->deskripsi,
+                        'kategori_id' => $item->kategori_id,
+                        'status' => $item->status,
+                        'urutan' => $item->urutan,
+                        'kategori' => null,
+                        'foto' => [],
+                    ];
                 }
-            });
+            }
             
             return response()->json($result, 200);
         } catch (\Exception $e) {
