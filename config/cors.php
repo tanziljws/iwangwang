@@ -12,15 +12,17 @@ return [
     | termasuk method DELETE, tanpa error CORS.
     */
 
-    // Terapkan CORS hanya pada route API dan sanctum
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    // Terapkan CORS pada semua route (gunakan wildcard untuk semua path)
+    'paths' => ['*'],
 
     // Izinkan semua method HTTP (GET, POST, PUT, DELETE, OPTIONS, ...)
     'allowed_methods' => ['*'],
 
-    // Batasi origin ke frontend dev; bisa ditambah origin lain jika perlu
+    // Izinkan origin dari frontend dev dan production Railway
     'allowed_origins' => [
         'http://localhost:5173',
+        'https://iwangtgallery3.up.railway.app',
+        'http://iwangtgallery3.up.railway.app',
     ],
 
     'allowed_origins_patterns' => [],
@@ -33,6 +35,6 @@ return [
 
     'max_age' => 0,
 
-    // Untuk dev ini tidak butuh cookie kredensial lintas origin
-    'supports_credentials' => false,
+    // Izinkan credentials untuk authentication
+    'supports_credentials' => true,
 ];
