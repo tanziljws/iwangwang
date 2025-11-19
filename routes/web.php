@@ -32,12 +32,20 @@ Route::get('/media/{path}', function ($path) {
 
 // ======================= API Routes (without /api prefix) =======================
 // Public API endpoints for frontend - must be before guest routes
-Route::get('/agendas', [AgendaController::class, 'index']);
-Route::get('/agendas/{agenda}', [AgendaController::class, 'show']);
-Route::get('/berita', [BeritaController::class, 'index']);
-Route::get('/berita/{beritum}', [BeritaController::class, 'show']);
-Route::get('/api/galeri', [GaleriApiController::class, 'index']); // Use /api/galeri to avoid conflict
-Route::get('/api/galeri/{id}', [GaleriApiController::class, 'show']);
+// These routes check Accept header to differentiate API from web requests
+Route::get('/agendas', [AgendaController::class, 'index'])->middleware('api');
+Route::get('/agendas/{agenda}', [AgendaController::class, 'show'])->middleware('api');
+Route::get('/berita', [BeritaController::class, 'index'])->middleware('api');
+Route::get('/berita/{beritum}', [BeritaController::class, 'show'])->middleware('api');
+Route::get('/galeri', function (\Illuminate\Http\Request $request) {
+    // If request wants JSON, return API response
+    if ($request->wantsJson() || $request->expectsJson() || $request->header('Accept') === 'application/json') {
+        return app(\App\Http\Controllers\Api\GaleriApiController::class)->index();
+    }
+    // Otherwise, return web view
+    return app(\App\Http\Controllers\GuestController::class)->galeri();
+});
+Route::get('/galeri/{id}', [GaleriApiController::class, 'show'])->middleware('api');
 
 // ======================= Guest Routes =======================
 Route::get('/', function () {
