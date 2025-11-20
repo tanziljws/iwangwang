@@ -118,15 +118,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="site-footer">
-        <div class="container">
-            <div class="footer-inner">
-                <div class="footer-meta"><p>2025 SMKN 4 Bogor. All rights reserved.</p></div>
-            </div>
-        </div>
-    </footer>
 </div>
 
 @push('scripts')
