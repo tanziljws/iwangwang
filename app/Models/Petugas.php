@@ -53,6 +53,16 @@ class Petugas extends Authenticatable
 
     public function getAuthIdentifierName()
     {
-        return 'id';
+        return 'username';
+    }
+    
+    /**
+     * Get the name of the unique identifier for the user.
+     *
+     * @return string
+     */
+    public function getAuthIdentifier()
+    {
+        return $this->username;
     }
 }

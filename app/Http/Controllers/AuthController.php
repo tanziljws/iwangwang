@@ -105,34 +105,53 @@ class AuthController extends Controller
             'password.required' => 'Password harus diisi',
         ]);
 
-        if (Auth::guard('petugas')->attempt($credentials, $request->filled('remember'))) {
-            $request->session()->regenerate();
-            
-            // Set session data
-            $petugas = Auth::guard('petugas')->user();
-            
-            // Check if user is active
-            if ($petugas->status !== 'aktif') {
-                Auth::guard('petugas')->logout();
-                return back()
-                    ->withInput($request->only('username', 'remember'))
-                    ->with('error', 'Akun Anda tidak aktif. Silakan hubungi administrator.');
-            }
-            
-            // Store user data in session
-            $request->session()->put([
-                'admin_id' => $petugas->id,
-                'admin_name' => $petugas->nama_petugas,
-                'admin_role' => $petugas->jabatan,
-            ]);
+        // Debug: Log credentials (remove in production)
+        \Log::info('Admin login attempt', [
+            'username' => $credentials['username'],
+            'has_password' => !empty($credentials['password'])
+        ]);
 
-            return redirect()->intended(route('admin.dashboard'))
-                ->with('success', 'Selamat datang, ' . $petugas->nama_petugas . '!');
+        // Try to find user first
+        $petugas = \App\Models\Petugas::where('username', $credentials['username'])->first();
+        
+        if (!$petugas) {
+            \Log::warning('Admin login failed: User not found', ['username' => $credentials['username']]);
+            return back()
+                ->withInput($request->only('username', 'remember'))
+                ->with('error', 'Username atau password salah!');
         }
 
-        return back()
-            ->withInput($request->only('username', 'remember'))
-            ->with('error', 'Username atau password salah!');
+        // Check password manually first
+        if (!\Illuminate\Support\Facades\Hash::check($credentials['password'], $petugas->password)) {
+            \Log::warning('Admin login failed: Password mismatch', ['username' => $credentials['username']]);
+            return back()
+                ->withInput($request->only('username', 'remember'))
+                ->with('error', 'Username atau password salah!');
+        }
+
+        // Check if user is active
+        if ($petugas->status !== 'aktif') {
+            \Log::warning('Admin login failed: Account inactive', ['username' => $credentials['username']]);
+            return back()
+                ->withInput($request->only('username', 'remember'))
+                ->with('error', 'Akun Anda tidak aktif. Silakan hubungi administrator.');
+        }
+
+        // If all checks pass, login the user
+        Auth::guard('petugas')->login($petugas, $request->filled('remember'));
+        $request->session()->regenerate();
+        
+        // Store user data in session
+        $request->session()->put([
+            'admin_id' => $petugas->id,
+            'admin_name' => $petugas->nama_petugas,
+            'admin_role' => $petugas->jabatan,
+        ]);
+
+        \Log::info('Admin login successful', ['username' => $credentials['username'], 'id' => $petugas->id]);
+
+        return redirect()->intended(route('admin.dashboard'))
+            ->with('success', 'Selamat datang, ' . $petugas->nama_petugas . '!');
     }
 
     /**
