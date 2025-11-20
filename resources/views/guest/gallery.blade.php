@@ -131,8 +131,7 @@
 
 @push('scripts')
 <script>
-    // Use web routes for session-based auth, fallback to API routes for token-based auth
-    const WEB_BASE = '{{ url("/user") }}';
+    // Always use /api routes, but with session cookies for session-based auth
     const API_BASE = '{{ url("/api") }}';
     let selectedPhoto = null;
     let likeCount = 0;
@@ -150,7 +149,6 @@
     // Check if user is logged in via session
     function isLoggedInViaSession() {
         // Check if user is logged in via Laravel session
-        // We'll check by making a simple request or checking cookie
         const cookies = document.cookie.split(';');
         for (let cookie of cookies) {
             const [name] = cookie.trim().split('=');
@@ -166,19 +164,6 @@
         return !!localStorage.getItem('userToken');
     }
 
-    // Determine which base URL to use
-    function getBaseUrl() {
-        // If logged in via session (Blade login), use web routes
-        // If logged in via token (API login), use API routes
-        if (isLoggedInViaSession()) {
-            return WEB_BASE;
-        } else if (hasApiToken()) {
-            return API_BASE;
-        }
-        // Default to web routes for session-based auth
-        return WEB_BASE;
-    }
-
     function getAuthHeaders() {
         const headers = {
             'Accept': 'application/json',
@@ -187,7 +172,7 @@
             'X-Requested-With': 'XMLHttpRequest'
         };
         
-        // If user has API token, add it (for API routes)
+        // If user has API token (not session), add it
         const token = localStorage.getItem('userToken');
         if (token && !isLoggedInViaSession()) {
             headers['Authorization'] = `Bearer ${token}`;
@@ -269,8 +254,7 @@
     async function loadLikes() {
         if (!selectedPhoto) return;
         try {
-            const baseUrl = getBaseUrl();
-            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/likes/count`, {
+            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/likes/count`, {
                 headers: { 'Accept': 'application/json', ...getAuthHeaders() },
                 credentials: 'same-origin' // Include cookies for session
             });
@@ -296,8 +280,7 @@
         btn.disabled = true;
         
         try {
-            const baseUrl = getBaseUrl();
-            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/like`, {
+            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/like`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...getAuthHeaders() },
                 credentials: 'same-origin' // Include cookies for session
@@ -347,8 +330,7 @@
     async function loadComments() {
         if (!selectedPhoto) return;
         try {
-            const baseUrl = getBaseUrl();
-            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/comments`, {
+            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/comments`, {
                 headers: { 'Accept': 'application/json', ...getAuthHeaders() },
                 credentials: 'same-origin' // Include cookies for session
             });
@@ -379,8 +361,7 @@
         btn.innerHTML = '...';
         
         try {
-            const baseUrl = getBaseUrl();
-            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/comments`, {
+            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/comments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify({ body: text }),
@@ -434,8 +415,7 @@
     async function downloadPhoto() {
         if (!selectedPhoto || !requireLogin()) return;
         try {
-            const baseUrl = getBaseUrl();
-            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/download`, {
+            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/download`, {
                 headers: { ...getAuthHeaders() },
                 credentials: 'same-origin' // Include cookies for session
             });

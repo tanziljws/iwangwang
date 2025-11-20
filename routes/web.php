@@ -92,13 +92,6 @@ Route::prefix('user')->name('user.')->group(function () {
     Route::middleware('auth:web')->group(function () {
         Route::get('/account', [UserAuthController::class, 'account'])->name('account');
         Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
-        
-        // Gallery interactions using session auth (for Blade pages)
-        Route::post('/foto/{foto}/like', [\App\Http\Controllers\Api\LikeController::class, 'toggle']);
-        Route::get('/foto/{foto}/likes/count', [\App\Http\Controllers\Api\LikeController::class, 'count']);
-        Route::get('/foto/{foto}/comments', [\App\Http\Controllers\Api\CommentController::class, 'index']);
-        Route::post('/foto/{foto}/comments', [\App\Http\Controllers\Api\CommentController::class, 'store']);
-        Route::get('/foto/{foto}/download', [\App\Http\Controllers\Api\DownloadController::class, 'download']);
     });
 });
 
