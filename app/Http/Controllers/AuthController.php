@@ -282,7 +282,6 @@ class AuthController extends Controller
             if (Auth::guard('petugas')->check()) {
                 return view('errors.500', [
                     'message' => 'Terjadi kesalahan saat memuat dashboard. Silakan coba lagi nanti.',
-                    'petugas' => Auth::guard('petugas')->user()
                 ]);
             }
             
