@@ -106,7 +106,14 @@ class KategoriController extends Controller
 
         $kategori->delete();
 
-        // Respon khusus untuk API
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Kategori berhasil dihapus!',
+            ], 200);
+        }
+
+        return redirect()->route('admin.dashboard')
+            ->with('success', 'Kategori berhasil dihapus!');
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
                 'message' => 'Kategori berhasil dihapus!',
