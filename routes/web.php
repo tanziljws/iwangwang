@@ -35,13 +35,36 @@ Route::get('/media/{path}', function ($path) {
 |--------------------------------------------------------------------------
 */
 
+// ======================= Guest Routes (must be before API routes) =======================
+Route::get('/', [GuestController::class, 'home'])->name('home');
+Route::get('/berita', function (\Illuminate\Http\Request $request) {
+    // If request wants JSON, return API response
+    if ($request->wantsJson() || $request->expectsJson() || $request->header('Accept') === 'application/json') {
+        $controller = new \App\Http\Controllers\Api\BeritaController();
+        return $controller->index();
+    }
+    // Otherwise, return web view
+    return app(\App\Http\Controllers\GuestController::class)->berita();
+})->name('berita');
+Route::get('/berita/{id}', function (\Illuminate\Http\Request $request, $id) {
+    // If request wants JSON, return API response
+    if ($request->wantsJson() || $request->expectsJson() || $request->header('Accept') === 'application/json') {
+        $controller = new \App\Http\Controllers\Api\BeritaController();
+        $berita = \App\Models\Berita::findOrFail($id);
+        return $controller->show($berita);
+    }
+    // Otherwise, return web view
+    return app(\App\Http\Controllers\GuestController::class)->beritaShow($id);
+})->name('berita.show');
+Route::get('/agenda', [GuestController::class, 'agenda'])->name('agenda');
+Route::get('/gallery', [GuestController::class, 'gallery'])->name('gallery');
+Route::get('/kontak', [GuestController::class, 'kontak'])->name('kontak');
+Route::get('/tentang', [GuestController::class, 'tentang'])->name('tentang');
+
 // ======================= API Routes (without /api prefix) =======================
-// Public API endpoints for frontend - must be before guest routes
-// These routes check Accept header to differentiate API from web requests
+// Public API endpoints for frontend - these check Accept header to differentiate API from web requests
 Route::get('/agendas', [AgendaController::class, 'index'])->middleware('api');
 Route::get('/agendas/{agenda}', [AgendaController::class, 'show'])->middleware('api');
-Route::get('/berita', [BeritaController::class, 'index'])->middleware('api');
-Route::get('/berita/{beritum}', [BeritaController::class, 'show'])->middleware('api');
 Route::get('/galeri', function (\Illuminate\Http\Request $request) {
     // If request wants JSON, return API response
     if ($request->wantsJson() || $request->expectsJson() || $request->header('Accept') === 'application/json' || $request->is('api/*')) {
@@ -52,11 +75,6 @@ Route::get('/galeri', function (\Illuminate\Http\Request $request) {
     return app(\App\Http\Controllers\GuestController::class)->galeri();
 });
 Route::get('/galeri/{id}', [GaleriApiController::class, 'show'])->middleware('api');
-
-// ======================= Guest Routes =======================
-Route::get('/', [GuestController::class, 'home'])->name('home');
-Route::get('/berita', [GuestController::class, 'berita'])->name('berita');
-Route::get('/berita/{id}', [GuestController::class, 'beritaShow'])->name('berita.show');
 Route::get('/agenda', [GuestController::class, 'agenda'])->name('agenda');
 Route::get('/gallery', [GuestController::class, 'gallery'])->name('gallery');
 Route::get('/kontak', [GuestController::class, 'kontak'])->name('kontak');
