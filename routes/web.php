@@ -129,6 +129,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ->middleware('auth:petugas')
         ->name('logout');
 
+    // Redirect /admin to login if not authenticated (must be before protected routes)
+    Route::get('/', function () {
+        if (Auth::guard('petugas')->check()) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('admin.login');
+    })->name('home');
+
     // ---------- Protected Routes (Require Authentication) ----------
     Route::middleware(['auth:petugas', 'admin'])->group(function () {
         // Dashboard
@@ -161,11 +169,5 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('petugas', PetugasController::class)
             ->names('petugas')
             ->middleware('can:manage-users');
-            
-        // Redirect /admin to dashboard
-        Route::get('/', function () {
-            return redirect()->route('admin.dashboard');
-        })->name('home');
-
     });
 });
