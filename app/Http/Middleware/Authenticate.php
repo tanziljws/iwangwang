@@ -42,12 +42,14 @@ class Authenticate extends Middleware
             // Check route middleware to detect guard
             if ($route) {
                 $middleware = $route->middleware();
-                foreach ($middleware as $mw) {
-                    if (strpos($mw, 'auth:petugas') !== false) {
-                        return route('admin.login');
-                    }
-                    if (strpos($mw, 'auth:web') !== false) {
-                        return route('user.login');
+                if (is_array($middleware)) {
+                    foreach ($middleware as $mw) {
+                        if (is_string($mw) && (strpos($mw, 'auth:petugas') !== false || strpos($mw, 'petugas') !== false)) {
+                            return route('admin.login');
+                        }
+                        if (is_string($mw) && (strpos($mw, 'auth:web') !== false)) {
+                            return route('user.login');
+                        }
                     }
                 }
             }
