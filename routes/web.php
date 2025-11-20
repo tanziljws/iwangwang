@@ -9,6 +9,7 @@ use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\Api\AgendaController;
 use App\Http\Controllers\Api\BeritaController;
 use App\Http\Controllers\Api\GaleriApiController;
+use App\Http\Controllers\UserAuthController;
 
 // Proxy storage files to bypass Apache 403 on symlink
 Route::get('/storage/{path}', function ($path) {
@@ -60,6 +61,21 @@ Route::get('/agenda', [GuestController::class, 'agenda'])->name('agenda');
 Route::get('/gallery', [GuestController::class, 'gallery'])->name('gallery');
 Route::get('/kontak', [GuestController::class, 'kontak'])->name('kontak');
 Route::get('/tentang', [GuestController::class, 'tentang'])->name('tentang');
+
+// ======================= User Auth Routes =======================
+Route::prefix('user')->name('user.')->group(function () {
+    Route::middleware('guest:web')->group(function () {
+        Route::get('/login', [UserAuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [UserAuthController::class, 'login']);
+        Route::get('/register', [UserAuthController::class, 'showRegisterForm'])->name('register');
+        Route::post('/register', [UserAuthController::class, 'register']);
+    });
+    
+    Route::middleware('auth:web')->group(function () {
+        Route::get('/account', [UserAuthController::class, 'account'])->name('account');
+        Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
+    });
+});
 
 // ======================= Admin Routes =======================
 Route::prefix('admin')->name('admin.')->group(function () {
