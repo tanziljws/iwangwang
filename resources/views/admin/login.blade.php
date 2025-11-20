@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Login Admin - SMK NEGERI 4 KOTA BOGOR')
 
