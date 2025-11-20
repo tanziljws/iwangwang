@@ -1,0 +1,388 @@
+/* Navbar Styles */
+.navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background-color: #1a56db;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 900; /* lebih rendah saat di atas agar TopBar tampak */
+  transition: all 0.3s ease;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+/* Animation when scrolling */
+.navbar.scrolling-down {
+  transform: translateY(0); /* tetap terlihat, jangan geser ke atas */
+}
+
+.navbar.scrolling-up {
+  transform: translateY(0);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  z-index: 2000; /* overlay TopBar saat scroll */
+}
+
+.navbar.scrolling-up::after {
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+}
+
+.navbar.scrolled {
+  padding: 5px 0;
+  background-color: rgba(0, 70, 255, 0.9);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 2000; /* overlay TopBar saat scroll */
+}
+
+.navbar-container {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 50px;
+  height: 70px;
+  box-sizing: border-box;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 15px;
+}
+
+.logo a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Keep navbar text solid white on all states */
+.navbar .logo a,
+.navbar .logo a:link,
+.navbar .logo a:visited,
+.navbar .logo a:hover,
+.navbar .logo a:active,
+.navbar .logo a:focus {
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+.navbar-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 2px;
+}
+
+/* Adjust logo size on smaller screens */
+@media (max-width: 768px) {
+  .navbar-logo {
+    height: 35px;
+    width: auto;
+  }
+  
+  .logo a {
+    font-size: 1.1rem;
+  }
+}
+
+.nav-links {
+  display: flex;
+  gap: 35px;
+  align-items: center;
+}
+
+/* Auth / User styles on navbar */
+.auth-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.auth-link:hover { text-decoration: underline; }
+
+/* Layout and pills for Daftar / Login */
+.nav-auth-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.nav-auth-right .auth-link {
+  font-size: 0.95rem;
+  padding: 6px 18px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Primary pill: Daftar (first) */
+.nav-auth-right .auth-link:first-child {
+  background: #ffffff;
+  color: #1a56db;
+  border-color: #ffffff;
+}
+
+.nav-auth-right .auth-link:first-child:hover {
+  text-decoration: none;
+  background: #e5edff;
+  border-color: #e5edff;
+}
+
+/* Ghost pill: Login (second) */
+.nav-auth-right .auth-link:last-child {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.nav-auth-right .auth-link:last-child:hover {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.user-pill { display: inline-flex; align-items: center; gap: 8px; color: #ffffff; text-decoration: none; }
+.avatar-circle {
+  width: 32px; height: 32px; border-radius: 999px;
+  background: transparent;              /* transparent fill */
+  border: 2px solid #ffffff;            /* white ring */
+  color: #ffffff;                       /* icon/text white */
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 5px 0;
+}
+
+.navbar .nav-link:link,
+.navbar .nav-link:visited,
+.navbar .nav-link:hover,
+.navbar .nav-link:active,
+.navbar .nav-link:focus {
+  color: #ffffff !important;
+}
+
+.nav-link:hover {
+  color: white;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  background-color: white;
+  bottom: 0;
+  left: 0;
+  transition: width 0.3s ease;
+  opacity: 0.8;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+  display: none;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.hamburger {
+  width: 30px;
+  height: 20px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.hamburger span {
+  display: block;
+  position: absolute;
+  height: 3px;
+  width: 100%;
+  background: white;
+  border-radius: 3px;
+  opacity: 0.9;
+  left: 0;
+  transform: rotate(0deg);
+  transition: 0.25s ease-in-out;
+}
+
+.hamburger span:nth-child(1) {
+  top: 0;
+}
+
+.hamburger span:nth-child(2),
+.hamburger span:nth-child(3) {
+  top: 10px;
+}
+
+.hamburger span:nth-child(4) {
+  top: 20px;
+}
+
+.hamburger.open span:nth-child(1) {
+  top: 10px;
+  width: 0%;
+  left: 50%;
+}
+
+.hamburger.open span:nth-child(2) {
+  transform: rotate(45deg);
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
+.hamburger.open span:nth-child(4) {
+  top: 10px;
+  width: 0%;
+  left: 50%;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 16px;
+    height: auto;
+    min-height: 64px;
+  }
+
+  .logo-container {
+    gap: 10px;
+    margin-left: 0;
+  }
+
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 70%;
+    height: 100vh;
+    background-color: #ffffff; /* background putih di mobile */
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    transition: all 0.5s ease;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    padding: 80px 28px 32px;
+    overflow-y: auto;
+  }
+
+  .nav-links.active {
+    right: 0;
+  }
+
+  .nav-link {
+    font-size: 1.05rem;
+    margin: 4px 0;
+    padding: 10px 0;
+    color: #1a56db !important; /* teks biru agar kontras dengan background putih */
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .nav-link::after {
+    display: none;
+  }
+
+  /* Paksa warna biru di mobile, override rule global yang memaksa putih */
+  .navbar .nav-links .nav-link,
+  .navbar .nav-links .nav-link:link,
+  .navbar .nav-links .nav-link:visited,
+  .navbar .nav-links .nav-link:hover,
+  .navbar .nav-links .nav-link:active,
+  .navbar .nav-links .nav-link:focus {
+    color: #1a56db !important;
+  }
+
+  /* Animasi teks saat menu mobile dibuka */
+  .nav-links.active .nav-link {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .nav-links.active .nav-link:nth-child(1) { transition-delay: 0.05s; }
+  .nav-links.active .nav-link:nth-child(2) { transition-delay: 0.10s; }
+  .nav-links.active .nav-link:nth-child(3) { transition-delay: 0.15s; }
+  .nav-links.active .nav-link:nth-child(4) { transition-delay: 0.20s; }
+  .nav-links.active .nav-link:nth-child(5) { transition-delay: 0.25s; }
+
+  .nav-auth-right {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .nav-auth-right .auth-link {
+    width: 100%;
+    justify-content: center;
+    color: #1a56db;
+    background: rgba(26, 86, 219, 0.08);
+    border-color: rgba(26, 86, 219, 0.2);
+  }
+
+  .nav-auth-right .auth-link:last-child {
+    color: #1a56db;
+    background: rgba(26, 86, 219, 0.12);
+    border-color: rgba(26, 86, 219, 0.25);
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-container {
+    padding: 0 12px;
+  }
+
+  .nav-links {
+    width: 80%;
+  }
+}

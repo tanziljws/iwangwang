@@ -1,0 +1,141 @@
+ .account-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  background:
+    radial-gradient(480px 280px at -10% -10%, rgba(59,130,246,0.16), transparent 60%),
+    radial-gradient(420px 260px at 110% 10%, rgba(129,140,248,0.18), transparent 65%),
+    #f4f7fb;
+  position: relative;
+}
+
+.account-page::before,
+.account-page::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.account-page::before {
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle at 30% 30%, rgba(59,130,246,0.28), transparent 65%);
+  top: -60px;
+  left: -40px;
+}
+
+.account-page::after {
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle at 60% 60%, rgba(129,140,248,0.26), transparent 70%);
+  bottom: -70px;
+  right: -20px;
+}
+
+.account-card {
+  width: 100%;
+  max-width: 720px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  padding: 24px 26px 26px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 20px;
+  color: #0f172a;
+}
+
+.account-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-main h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  color: #1d4ed8; /* judul di background putih: biru terang */
+}
+
+.account-info {
+  line-height: 1.7;
+  font-size: 0.95rem;
+  color: #111827; /* teks utama tetap gelap agar mudah dibaca */
+}
+
+.account-info strong {
+  color: #1d4ed8; /* label Nama/Email biru di atas background putih */
+}
+
+.account-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-stat-card {
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: #ffffff; /* teks di kartu biru: putih */
+  box-shadow: 0 14px 30px rgba(37,99,235,0.45);
+  border: 1px solid rgba(191,219,254,0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.account-stat-card h3 {
+  margin: 0 0 4px;
+  font-size: 0.9rem;
+  opacity: 0.92;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #e0f2ff;
+}
+
+.account-stat-card .stat-icon {
+  margin-right: 6px;
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+ .account-stat-card .stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.account-stat-card::before {
+  content: '';
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.14);
+  top: -40px;
+  right: -30px;
+}
+
+ .account-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.account-actions .btn-secondary {
+  color: #1d4ed8 !important;
+  border-color: #cbd5f5 !important;
+  background-color: #ffffff !important;
+}
+
+@media (max-width: 768px) {
+  .account-card {
+    grid-template-columns: 1fr;
+    padding: 20px 18px 22px;
+  }
+}

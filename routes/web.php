@@ -53,12 +53,13 @@ Route::get('/galeri', function (\Illuminate\Http\Request $request) {
 Route::get('/galeri/{id}', [GaleriApiController::class, 'show'])->middleware('api');
 
 // ======================= Guest Routes =======================
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
-Route::get('/tentang', [GuestController::class, 'tentang'])->name('tentang');
-Route::get('/galeri', [GuestController::class, 'galeri'])->name('galeri');
+Route::get('/', [GuestController::class, 'home'])->name('home');
+Route::get('/berita', [GuestController::class, 'berita'])->name('berita');
+Route::get('/berita/{id}', [GuestController::class, 'beritaShow'])->name('berita.show');
+Route::get('/agenda', [GuestController::class, 'agenda'])->name('agenda');
+Route::get('/gallery', [GuestController::class, 'gallery'])->name('gallery');
 Route::get('/kontak', [GuestController::class, 'kontak'])->name('kontak');
+Route::get('/tentang', [GuestController::class, 'tentang'])->name('tentang');
 
 // ======================= Admin Routes =======================
 Route::prefix('admin')->name('admin.')->group(function () {
