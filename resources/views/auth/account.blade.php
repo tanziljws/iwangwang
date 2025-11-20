@@ -8,26 +8,76 @@
 
 @section('content')
 <div class="account-page">
-    <div class="account-container">
-        <h1>Akun Saya</h1>
-        <div class="account-info">
-            <div class="account-avatar">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z"/>
-                </svg>
+    <div class="account-card">
+        <div class="account-main">
+            <h2>Akun Saya</h2>
+            <div class="account-info">
+                <div><strong>Nama:</strong> {{ $user->name }}</div>
+                <div><strong>Email:</strong> {{ $user->email }}</div>
             </div>
-            <div class="account-details">
-                <h2>{{ $user->name }}</h2>
-                <p>{{ $user->email }}</p>
-                <p class="account-meta">Bergabung: {{ $user->created_at->format('d M Y') }}</p>
+            <div class="account-actions">
+                <a href="{{ route('gallery') }}" class="btn-secondary">Ke Galeri</a>
+                <form method="POST" action="{{ route('user.logout') }}" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="auth-primary">Logout</button>
+                </form>
             </div>
         </div>
-        
-        <form method="POST" action="{{ route('user.logout') }}" style="margin-top: 2rem;">
-            @csrf
-            <button type="submit" class="btn btn-danger">Logout</button>
-        </form>
+        <div class="account-stats">
+            <div class="account-stat-card">
+                <h3><span class="stat-icon">❤</span> Galeri yang disukai</h3>
+                <div class="stat-value" id="likedCount">0</div>
+            </div>
+            <div class="account-stat-card">
+                <h3><span class="stat-icon">💬</span> Komentar dikirim</h3>
+                <div class="stat-value" id="commentCount">0</div>
+            </div>
+            <div class="account-stat-card">
+                <h3><span class="stat-icon">⬇</span> Foto diunduh</h3>
+                <div class="stat-value" id="downloadCount">0</div>
+            </div>
+        </div>
     </div>
 </div>
-@endsection
 
+@push('scripts')
+<script>
+    // Load stats from localStorage (same as frontend)
+    function loadStats() {
+        try {
+            // Liked photos count
+            const likedIds = JSON.parse(localStorage.getItem('userLikedPhotoIds') || '[]');
+            document.getElementById('likedCount').textContent = Array.isArray(likedIds) ? likedIds.length : 0;
+        } catch (e) {
+            document.getElementById('likedCount').textContent = '0';
+        }
+        
+        try {
+            // Comment count
+            const commentCount = parseInt(localStorage.getItem('userCommentCount') || '0');
+            document.getElementById('commentCount').textContent = commentCount || 0;
+        } catch (e) {
+            document.getElementById('commentCount').textContent = '0';
+        }
+        
+        try {
+            // Download count
+            const downloadCount = parseInt(localStorage.getItem('userDownloadCount') || '0');
+            document.getElementById('downloadCount').textContent = downloadCount || 0;
+        } catch (e) {
+            document.getElementById('downloadCount').textContent = '0';
+        }
+    }
+    
+    // Load stats on page load
+    loadStats();
+    
+    // Listen for storage changes (if user likes/comments/downloads from another tab)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'userLikedPhotoIds' || e.key === 'userCommentCount' || e.key === 'userDownloadCount') {
+            loadStats();
+        }
+    });
+</script>
+@endpush
+@endsection
