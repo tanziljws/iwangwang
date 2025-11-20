@@ -95,7 +95,12 @@ class KategoriController extends Controller
                 ], 422);
             }
 
-            return redirect()->route('admin.kategori.index')
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Kategori tidak dapat dihapus karena masih memiliki galeri!',
+                ], 422);
+            }
+            return redirect()->route('admin.dashboard')
                 ->with('error', 'Kategori tidak dapat dihapus karena masih memiliki galeri!');
         }
 

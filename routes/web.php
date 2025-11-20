@@ -6,8 +6,10 @@ use App\Http\Controllers\GaleriController;
 use App\Http\Controllers\FotoController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PetugasController;
-use App\Http\Controllers\Api\AgendaController;
-use App\Http\Controllers\Api\BeritaController;
+use App\Http\Controllers\Api\AgendaController as ApiAgendaController;
+use App\Http\Controllers\Api\BeritaController as ApiBeritaController;
+use App\Http\Controllers\AgendaController;
+use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Api\GaleriApiController;
 use App\Http\Controllers\UserAuthController;
 
@@ -113,7 +115,7 @@ Route::get('/', [GuestController::class, 'home'])->name('home');
 Route::get('/berita', function (\Illuminate\Http\Request $request) {
     // If request wants JSON, return API response
     if ($request->wantsJson() || $request->expectsJson() || $request->header('Accept') === 'application/json') {
-        $controller = new \App\Http\Controllers\Api\BeritaController();
+        $controller = new ApiBeritaController();
         return $controller->index();
     }
     // Otherwise, return web view
@@ -122,7 +124,7 @@ Route::get('/berita', function (\Illuminate\Http\Request $request) {
 Route::get('/berita/{id}', function (\Illuminate\Http\Request $request, $id) {
     // If request wants JSON, return API response
     if ($request->wantsJson() || $request->expectsJson() || $request->header('Accept') === 'application/json') {
-        $controller = new \App\Http\Controllers\Api\BeritaController();
+        $controller = new ApiBeritaController();
         $berita = \App\Models\Berita::findOrFail($id);
         return $controller->show($berita);
     }
@@ -147,8 +149,8 @@ Route::middleware(['auth:web'])->prefix('api')->group(function () {
 
 // ======================= API Routes (without /api prefix) =======================
 // Public API endpoints for frontend - these check Accept header to differentiate API from web requests
-Route::get('/agendas', [AgendaController::class, 'index'])->middleware('api');
-Route::get('/agendas/{agenda}', [AgendaController::class, 'show'])->middleware('api');
+Route::get('/agendas', [ApiAgendaController::class, 'index'])->middleware('api');
+Route::get('/agendas/{agenda}', [ApiAgendaController::class, 'show'])->middleware('api');
 Route::get('/galeri', function (\Illuminate\Http\Request $request) {
     // If request wants JSON, return API response
     if ($request->wantsJson() || $request->expectsJson() || $request->header('Accept') === 'application/json' || $request->is('api/*')) {
@@ -243,50 +245,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->names('petugas')
             ->middleware('can:manage-users');
             
-        // Berita Management (using API controller for now, can be extended later)
-        Route::get('/berita', function () {
-            return redirect()->route('admin.dashboard')->with('info', 'Gunakan tab Berita di dashboard untuk mengelola berita.');
-        })->name('berita.index');
-        
-        Route::get('/berita/create', function () {
-            return redirect()->route('admin.dashboard')->with('info', 'Fitur tambah berita akan segera hadir.');
-        })->name('berita.create');
-        
-        Route::get('/berita/{id}/edit', function ($id) {
-            return redirect()->route('admin.dashboard')->with('info', 'Fitur edit berita akan segera hadir.');
-        })->name('berita.edit');
-        
-        Route::delete('/berita/{id}', function ($id) {
-            try {
-                $berita = \App\Models\Berita::findOrFail($id);
-                $berita->delete();
-                return redirect()->route('admin.dashboard')->with('success', 'Berita berhasil dihapus.');
-            } catch (\Exception $e) {
-                return redirect()->route('admin.dashboard')->with('error', 'Gagal menghapus berita: ' . $e->getMessage());
-            }
-        })->name('berita.destroy');
+        // Berita Management
+        Route::resource('berita', BeritaController::class)
+            ->names('berita');
 
-        // Agenda Management (using API controller for now, can be extended later)
-        Route::get('/agenda', function () {
-            return redirect()->route('admin.dashboard')->with('info', 'Gunakan tab Agenda di dashboard untuk mengelola agenda.');
-        })->name('agenda.index');
-        
-        Route::get('/agenda/create', function () {
-            return redirect()->route('admin.dashboard')->with('info', 'Fitur tambah agenda akan segera hadir.');
-        })->name('agenda.create');
-        
-        Route::get('/agenda/{id}/edit', function ($id) {
-            return redirect()->route('admin.dashboard')->with('info', 'Fitur edit agenda akan segera hadir.');
-        })->name('agenda.edit');
-        
-        Route::delete('/agenda/{id}', function ($id) {
-            try {
-                $agenda = \App\Models\Agenda::findOrFail($id);
-                $agenda->delete();
-                return redirect()->route('admin.dashboard')->with('success', 'Agenda berhasil dihapus.');
-            } catch (\Exception $e) {
-                return redirect()->route('admin.dashboard')->with('error', 'Gagal menghapus agenda: ' . $e->getMessage());
-            }
-        })->name('agenda.destroy');
+        // Agenda Management
+        Route::resource('agenda', AgendaController::class)
+            ->names('agenda');
+
+        // User Management
+        Route::get('/user', function () {
+            $petugas = auth()->guard('petugas')->user();
+            return view('admin.user.index', compact('petugas'));
+        })->name('user.index');
     });
 });

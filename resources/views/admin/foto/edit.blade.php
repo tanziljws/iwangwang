@@ -1,0 +1,168 @@
+@extends('layouts.app')
+
+@section('title', 'Edit Foto - Admin')
+
+@push('styles')
+<link rel="stylesheet" href="{{ secure_asset('css/Dashboard.css') }}">
+<link rel="stylesheet" href="{{ secure_asset('css/tambahfoto.css') }}">
+@endpush
+
+@section('content')
+<div class="dashboard">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <img src="{{ secure_asset('images/smkn4.jpg') }}" alt="SMKN 4" class="sidebar-logo-img">
+                <h2>GALERI SMKN4</h2>
+            </div>
+        </div>
+        <div class="sidebar-stats">
+            <div class="sidebar-stat-card">
+                <span class="sidebar-stat-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sidebar-stat-icon">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Halo, {{ $petugas->nama_petugas }} <span class="wave" aria-hidden="true">👋</span>
+                </span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ route('admin.dashboard') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="{{ route('admin.foto.index') }}" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span class="nav-text">Foto</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <form method="POST" action="{{ route('admin.logout') }}" style="display: block; width: 100%;">
+                @csrf
+                <button type="submit" class="btn btn-logout" style="width: 100%;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Keluar</span>
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <main class="dashboard-content">
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="header-title">
+                    <h1>Edit Foto</h1>
+                    <p>Ubah informasi foto</p>
+                </div>
+            </div>
+
+            <div class="content-body">
+                @if($errors->any())
+                    <div style="background: #fee2e2; color: #b91c1c; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('admin.foto.update', $foto->id) }}" enctype="multipart/form-data" class="tambah-form">
+                    @csrf
+                    @method('PUT')
+                    <div class="form-group">
+                        <label class="form-label">Pilih Galeri</label>
+                        <div class="input-group">
+                            <select name="galeri_id" class="form-input" required>
+                                <option value="">Pilih galeri...</option>
+                                @foreach($galeris as $g)
+                                    <option value="{{ $g->id }}" {{ old('galeri_id', $foto->galeri_id) == $g->id ? 'selected' : '' }}>
+                                        {{ $g->nama }} ({{ $g->kategori->nama ?? 'N/A' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Judul Foto</label>
+                        <div class="input-group">
+                            <input type="text" name="judul" class="form-input" placeholder="Judul foto" value="{{ old('judul', $foto->judul) }}" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Deskripsi (opsional)</label>
+                        <div class="input-group">
+                            <textarea name="deskripsi" class="form-textarea" rows="3" placeholder="Deskripsi">{{ old('deskripsi', $foto->deskripsi) }}</textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gambar Saat Ini</label>
+                        <div style="margin-bottom: 12px;">
+                            <img src="{{ $foto->file_url }}" alt="{{ $foto->judul }}" style="max-width: 300px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        </div>
+                        <label class="form-label">Ganti Gambar (opsional)</label>
+                        <div class="file-upload">
+                            <label class="file-upload-label">
+                                <input type="file" name="file" class="file-upload-input" accept="image/*" onchange="previewImage(this)">
+                                <div class="file-upload-content" id="filePreview">
+                                    <span class="text-sm text-gray-500">Klik untuk unggah gambar baru</span>
+                                    <span class="text-xs text-gray-400 mt-1">JPG/PNG maks 8MB</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Urutan</label>
+                        <div class="input-group">
+                            <input type="number" name="urutan" class="form-input" placeholder="0" value="{{ old('urutan', $foto->urutan) }}" min="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" name="status" value="1" {{ old('status', $foto->status) ? 'checked' : '' }}>
+                            Aktif
+                        </label>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="{{ route('admin.foto.index') }}" class="btn btn-secondary">Kembali</a>
+                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+
+@push('scripts')
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('filePreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <img src="${e.target.result}" alt="Preview" class="file-upload-preview">
+                <span class="file-upload-name">${input.files[0].name}</span>
+            `;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+@endpush
+@endsection
+

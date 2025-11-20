@@ -1,0 +1,132 @@
+/* Wrapper dan kartu utama untuk halaman Tambah/Edit Galeri */
+.tambah-page-wrapper {
+  min-height: 100vh;
+  padding: 3rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: #f3f4f6;
+}
+
+.tambah-card {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 2.25rem 2.5rem;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(191,219,254,0.55), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(129,140,248,0.45), transparent 55%),
+    #ffffff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16);
+  position: relative;
+  overflow: hidden;
+}
+
+.tambah-title {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.35rem;
+}
+
+.tambah-subtitle {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin: 0 0 1.75rem;
+}
+
+.tambah-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 1.75rem;
+  background: transparent;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tambah-form .form-group { margin-bottom: 0.4rem; }
+.tambah-form .form-label { font-weight: 600; color: #0f172a; margin-bottom: 0.35rem; font-size: 0.95rem; }
+.tambah-form .form-input, .tambah-form .form-textarea, .tambah-form select {
+  width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; background: #f9fafb; font-size: 0.95rem; color: #111827; transition: box-shadow .2s ease, border-color .2s ease, background-color .2s ease;
+}
+.tambah-form .form-input:focus, .tambah-form .form-textarea:focus, .tambah-form select:focus {
+  outline: none; border-color: #1a56db; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+}
+
+.tambah-form .form-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* File upload preview */
+.tambah-form .file-upload { display: block; }
+.tambah-form .file-upload-label { display:block; border: 1px dashed #c7d2fe; border-radius: 12px; background: #f9fafb; padding: 16px; cursor: pointer; text-align:center; transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease; }
+.tambah-form .file-upload-label:hover { border-color: #1a56db; background: #eef2ff; box-shadow: 0 10px 24px rgba(15,23,42,.12); }
+.tambah-form .file-upload-content { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.tambah-form .file-upload-preview { width: 100%; max-width: 320px; height: auto; border-radius: 10px; box-shadow: 0 6px 18px rgba(2,6,23,.16); }
+.tambah-form .file-upload-name { font-size: .85rem; color: #475569; }
+
+.tambah-form .modal-footer { display:flex; gap:.6rem; justify-content:flex-end; padding-top:1rem; }
+
+.tambah-form .btn.btn-secondary {
+  background-color: #1d4ed8;
+  color: #ffffff;
+  border: 1px solid #1d4ed8;
+}
+
+.tambah-form .btn.btn-secondary:hover,
+.tambah-form .btn.btn-secondary:active {
+  background-color: #1e40af;
+  color: #ffffff;
+  border-color: #1e40af;
+}
+
+/* Force white text on primary buttons inside add form */
+.tambah-form .btn.btn-primary {
+  color: #ffffff !important;
+}
+
+.tambah-form .btn.btn-primary svg {
+  color: #ffffff;
+}
+
+/* Decorative blobs */
+.tambah-form::before,
+.tambah-form::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(18px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.tambah-form::before {
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle at 30% 30%, rgba(59,130,246,0.35), rgba(59,130,246,0));
+  top: -80px;
+  right: -90px;
+}
+
+.tambah-form::after {
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle at 70% 70%, rgba(96,165,250,0.32), rgba(96,165,250,0));
+  bottom: -70px;
+  left: -70px;
+}
+
+/* Pastikan konten berada di atas dekorasi blob */
+.tambah-form > * {
+  position: relative;
+  z-index: 1;
+}
