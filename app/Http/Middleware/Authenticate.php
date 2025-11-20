@@ -23,7 +23,12 @@ class Authenticate extends Middleware
                 return route('admin.login');
             }
             
-            return route('login');
+            if ($guard === 'web') {
+                return route('user.login');
+            }
+            
+            // Default fallback to user login
+            return route('user.login');
         }
     }
 }
