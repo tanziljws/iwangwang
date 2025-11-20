@@ -73,16 +73,23 @@ Route::get('/media/{path}', function ($path) {
         $path = urldecode($path);
         
         // Security: prevent directory traversal
-        if (strpos($path, '..') !== false || strpos($path, '/') === 0) {
+        if (strpos($path, '..') !== false) {
             abort(403, 'Invalid path');
         }
         
+        // Normalize path - remove leading slash if present
+        $path = ltrim($path, '/');
+        
         // Try multiple possible locations
         $possiblePaths = [
-            storage_path('app/public/foto/' . $path),
+            // Direct path (e.g., foto/filename.jpg)
             storage_path('app/public/' . $path),
-            storage_path('app/public/berita/' . $path),
-            storage_path('app/public/agenda/' . $path),
+            // Just filename in foto folder
+            storage_path('app/public/foto/' . basename($path)),
+            // Just filename in root
+            storage_path('app/public/' . basename($path)),
+            // If path already includes foto/, use as is
+            storage_path('app/public/' . $path),
         ];
         
         foreach ($possiblePaths as $full) {
@@ -109,7 +116,7 @@ Route::get('/media/{path}', function ($path) {
         ]);
         abort(500, 'Error serving file');
     }
-})->where('path', '.*');
+})->where('path', '.*')->middleware([]);
 
 /*
 |--------------------------------------------------------------------------
