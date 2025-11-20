@@ -9,45 +9,61 @@
 
 @section('content')
 <div class="agenda-page">
+    <!-- Hero Section -->
     <section class="agenda-hero">
-        <div class="hero-decor">
-            <span class="blob"></span>
-            <span class="ring r1"></span>
-            <span class="ring r2"></span>
+        <div class="container">
+            <h1>Agenda Sekolah</h1>
+            <p>Jadwal kegiatan dan acara SMKN 4 Kota Bogor</p>
         </div>
-        <div class="header-wrap">
-            <i class="fas fa-calendar-alt header-icon"></i>
-            <div>
-                <h1>Agenda Sekolah</h1>
-                <p>Jadwal kegiatan dan acara sekolah yang akan datang</p>
+    </section>
+
+    <!-- Agenda Grid -->
+    <section class="agenda-grid-section">
+        <div class="container">
+            @if(count($agendas) === 0)
+                <div class="agenda-empty">Belum ada agenda yang dijadwalkan.</div>
+            @endif
+            <div class="agenda-grid">
+                @foreach($agendas as $item)
+                    @php
+                        $dateObj = \Carbon\Carbon::parse($item->date);
+                        $dayLabel = $dateObj->format('d');
+                        $monthLabel = $dateObj->format('M Y');
+                        $fullDate = $dateObj->format('d F Y');
+                    @endphp
+                    <div class="agenda-card agenda-card-plain">
+                        <div class="agenda-date-badge">
+                            <span class="day">{{ $dayLabel }}</span>
+                            <span class="month">{{ $monthLabel }}</span>
+                        </div>
+                        <div class="agenda-content">
+                            <h3>{{ $item->title }}</h3>
+                            <div class="agenda-meta">
+                                <span class="location">
+                                    <i class="fas fa-map-marker-alt"></i> {{ $item->location ?? 'Lokasi menyusul' }}
+                                </span>
+                                <span class="date">
+                                    <i class="far fa-calendar-alt"></i> {{ $fullDate }}
+                                    @if($item->time)
+                                        &bull; {{ $item->time }}
+                                    @endif
+                                </span>
+                            </div>
+                            <p>{{ $item->description ?? 'Belum ada deskripsi tambahan.' }}</p>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
     </section>
 
-    <section class="agenda-section">
-        <div class="agenda-grid">
-            @forelse($agendas as $agenda)
-                <div class="agenda-card">
-                    <div class="agenda-date">
-                        <span class="date-day">{{ \Carbon\Carbon::parse($agenda->date)->format('d') }}</span>
-                        <span class="date-month">{{ \Carbon\Carbon::parse($agenda->date)->format('M') }}</span>
-                    </div>
-                    <div class="agenda-content">
-                        <h3>{{ $agenda->title }}</h3>
-                        @if($agenda->description)
-                            <p>{{ Str::limit($agenda->description, 100) }}</p>
-                        @endif
-                        <div class="agenda-meta">
-                            <p><i class="fas fa-clock"></i> {{ $agenda->time ?? '-' }}</p>
-                            <p><i class="fas fa-map-marker-alt"></i> {{ $agenda->location ?? '-' }}</p>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="agenda-empty" style="grid-column: 1 / -1;">Belum ada agenda.</div>
-            @endforelse
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-meta"><p>2025 SMKN 4 Bogor. All rights reserved.</p></div>
+            </div>
         </div>
-    </section>
+    </footer>
 </div>
 @endsection
-

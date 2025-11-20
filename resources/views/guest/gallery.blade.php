@@ -15,13 +15,8 @@
             <span class="ring r1"></span>
             <span class="ring r2"></span>
         </div>
-        <div class="header-wrap">
-            <i class="fas fa-images header-icon"></i>
-            <div>
-                <h1>Galeri Sekolah</h1>
-                <p>Kumpulan foto kegiatan, prestasi, dan momen penting sekolah</p>
-            </div>
-        </div>
+        <h1>Galeri Sekolah</h1>
+        <p>Rangkaian momen terbaik, fasilitas unggulan, dan aktivitas siswa yang menginspirasi.</p>
     </section>
 
     <section class="gallery-section">

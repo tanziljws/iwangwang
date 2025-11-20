@@ -37,7 +37,7 @@
                         <div class="berita-meta">
                             <span class="meta-item">
                                 <i class="fas fa-calendar-alt"></i> 
-                                {{ $news->published_at ? \Carbon\Carbon::parse($news->published_at)->format('d M Y') : '-' }}
+                                {{ $news->published_at ? \Carbon\Carbon::parse($news->published_at)->format('d F Y') : '-' }}
                             </span>
                             <span class="meta-item">
                                 <i class="fas fa-user"></i> 

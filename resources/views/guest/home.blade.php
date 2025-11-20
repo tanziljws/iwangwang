@@ -199,7 +199,7 @@
                     @php
                         $dateObj = \Carbon\Carbon::parse($event->date);
                         $dayLabel = $dateObj->format('d');
-                        $monthLabel = $dateObj->format('M Y');
+                        $monthLabel = $dateObj->format('M Y'); // Format: "Jan 2025"
                     @endphp
                     <div class="agenda-card agenda-card-flat">
                         <div class="agenda-date agenda-date-pill">
