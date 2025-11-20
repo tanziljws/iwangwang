@@ -14,14 +14,17 @@ class PetugasSeeder extends Seeder
      */
     public function run(): void
     {
-        Petugas::create([
-            'nama_petugas' => 'Administrator',
-            'username' => 'admin',
-            'password' => Hash::make('admin123'),
-            'email' => 'admin@webgallery.com',
-            'jabatan' => 'admin',
-            'status' => 'aktif',
-        ]);
+        // Check if admin already exists
+        if (!Petugas::where('username', 'admin')->exists()) {
+            Petugas::create([
+                'nama_petugas' => 'Administrator',
+                'username' => 'admin',
+                'password' => Hash::make('admin123'),
+                'email' => 'admin@smkn4-bogor.sch.id',
+                'jabatan' => 'admin',
+                'status' => 'aktif',
+            ]);
+        }
 
         Petugas::create([
             'nama_petugas' => 'Petugas 1',
