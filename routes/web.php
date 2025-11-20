@@ -131,7 +131,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Redirect /admin to login if not authenticated (must be before protected routes)
     Route::get('/', function () {
-        if (Auth::guard('petugas')->check()) {
+        if (\Illuminate\Support\Facades\Auth::guard('petugas')->check()) {
             return redirect()->route('admin.dashboard');
         }
         return redirect()->route('admin.login');
