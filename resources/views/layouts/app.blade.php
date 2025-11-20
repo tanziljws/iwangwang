@@ -20,16 +20,32 @@
 </head>
 <body>
     <!-- Top Bar -->
-    <div class="topbar">
-        <div class="topbar-container">
-            <div class="topbar-left">
-                <span><i class="fas fa-phone"></i> (0251) 8321234</span>
-                <span><i class="fas fa-envelope"></i> info@smkn4bogor.sch.id</span>
+    <div class="top-bar">
+        <div class="top-bar-container">
+            <div class="top-bar-info">
+                <span class="info-text">
+                    <i class="fas fa-phone" style="color: white; font-size: 1em; margin-right: 5px;"></i>
+                    <a href="tel:02518321374" class="info-link">(0251) 8321374</a>
+                </span>
+                <span class="info-text">
+                    <i class="fas fa-envelope" style="color: white; font-size: 1em; margin-right: 5px;"></i>
+                    <a href="mailto:info@smkn4-bogor.sch.id" class="info-link">info@smkn4-bogor.sch.id</a>
+                </span>
+                <span class="info-text">
+                    <i class="fas fa-map-marker-alt" style="color: white; font-size: 1em; margin-right: 5px;"></i>
+                    <span>Jl. Raya Tajur No. 35, Bogor</span>
+                </span>
             </div>
-            <div class="topbar-right">
-                <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook"></i></a>
-                <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
-                <a href="https://youtube.com" target="_blank"><i class="fab fa-youtube"></i></a>
+            <div class="top-bar-social">
+                <a href="https://www.instagram.com/smkn4kota_bogor" class="social-icon" aria-label="Instagram" target="_blank" rel="noopener noreferrer" style="color: white;">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://www.youtube.com/@smkn4kota_bogor" class="social-icon" aria-label="YouTube" target="_blank" rel="noopener noreferrer" style="color: white;">
+                    <i class="fab fa-youtube"></i>
+                </a>
+                <a href="https://www.tiktok.com/@smkn4kota_bogor" class="social-icon" aria-label="TikTok" target="_blank" rel="noopener noreferrer" style="color: white;">
+                    <i class="fab fa-tiktok"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -39,7 +55,7 @@
         <div class="navbar-container">
             <div class="logo">
                 <a href="{{ route('home') }}" class="logo-container">
-                    <img src="{{ secure_asset('images/smkn4.jpg') }}" alt="Logo SMKN 4" class="navbar-logo">
+                    <img src="{{ secure_asset('images/smk4.png') }}" alt="Logo SMKN 4" class="navbar-logo" onerror="this.src='{{ secure_asset('images/smkn.jpg') }}'; this.onerror=null;">
                     <div>
                         <span>SMK</span> NEGERI 4 KOTA BOGOR
                     </div>
