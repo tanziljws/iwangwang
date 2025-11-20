@@ -80,6 +80,16 @@ Route::get('/gallery', [GuestController::class, 'gallery'])->name('gallery');
 Route::get('/kontak', [GuestController::class, 'kontak'])->name('kontak');
 Route::get('/tentang', [GuestController::class, 'tentang'])->name('tentang');
 
+// ======================= Gallery API Routes (Session-based auth for Blade pages) =======================
+// These routes use session auth instead of Sanctum token, so Blade-logged users can use gallery features
+Route::middleware(['auth:web'])->prefix('api')->group(function () {
+    Route::post('/foto/{foto}/like', [\App\Http\Controllers\Api\LikeController::class, 'toggle']);
+    Route::get('/foto/{foto}/likes/count', [\App\Http\Controllers\Api\LikeController::class, 'count']);
+    Route::get('/foto/{foto}/comments', [\App\Http\Controllers\Api\CommentController::class, 'index']);
+    Route::post('/foto/{foto}/comments', [\App\Http\Controllers\Api\CommentController::class, 'store']);
+    Route::get('/foto/{foto}/download', [\App\Http\Controllers\Api\DownloadController::class, 'download']);
+});
+
 // ======================= User Auth Routes =======================
 Route::prefix('user')->name('user.')->group(function () {
     Route::middleware('guest:web')->group(function () {
@@ -93,6 +103,16 @@ Route::prefix('user')->name('user.')->group(function () {
         Route::get('/account', [UserAuthController::class, 'account'])->name('account');
         Route::post('/logout', [UserAuthController::class, 'logout'])->name('logout');
     });
+});
+
+// Gallery interactions using session auth (for Blade pages)
+// These routes use session-based auth instead of Sanctum token
+Route::middleware(['auth:web', 'web'])->prefix('api')->group(function () {
+    Route::post('/foto/{foto}/like', [\App\Http\Controllers\Api\LikeController::class, 'toggle']);
+    Route::get('/foto/{foto}/likes/count', [\App\Http\Controllers\Api\LikeController::class, 'count']);
+    Route::get('/foto/{foto}/comments', [\App\Http\Controllers\Api\CommentController::class, 'index']);
+    Route::post('/foto/{foto}/comments', [\App\Http\Controllers\Api\CommentController::class, 'store']);
+    Route::get('/foto/{foto}/download', [\App\Http\Controllers\Api\DownloadController::class, 'download']);
 });
 
 // ======================= Admin Routes =======================
