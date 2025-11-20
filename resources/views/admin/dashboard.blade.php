@@ -376,12 +376,12 @@
                                             </td>
                                             <td>
                                                 <div class="flex justify-end space-x-2">
-                                                    <a href="{{ route('admin.berita.edit', $b->id) }}" class="btn-icon btn-edit" title="Edit">
+                                                    <button type="button" class="btn-icon btn-edit" title="Edit (Coming Soon)" onclick="alert('Fitur edit berita akan segera hadir')">
                                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                                         </svg>
-                                                    </a>
+                                                    </button>
                                                     <form action="{{ route('admin.berita.destroy', $b->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus berita ini?');" style="display:inline-block;">
                                                         @csrf
                                                         @method('DELETE')
@@ -457,12 +457,12 @@
                                             </td>
                                             <td>
                                                 <div class="flex justify-end space-x-2">
-                                                    <a href="{{ route('admin.agenda.edit', $a->id) }}" class="btn-icon btn-edit" title="Edit">
+                                                    <button type="button" class="btn-icon btn-edit" title="Edit (Coming Soon)" onclick="alert('Fitur edit agenda akan segera hadir')">
                                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                                                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                                         </svg>
-                                                    </a>
+                                                    </button>
                                                     <form action="{{ route('admin.agenda.destroy', $a->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus agenda ini?');" style="display:inline-block;">
                                                         @csrf
                                                         @method('DELETE')
@@ -568,9 +568,9 @@ function setActiveTab(tab) {
     // Update header actions
     const headerActions = document.getElementById('headerActions');
     if (tab === 'agenda') {
-        headerActions.innerHTML = '<a href="{{ route("admin.agenda.create") }}" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Tambah Agenda</a>';
+        headerActions.innerHTML = '<button type="button" class="btn btn-primary" onclick="alert(\'Fitur tambah agenda akan segera hadir\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Tambah Agenda</button>';
     } else if (tab === 'berita') {
-        headerActions.innerHTML = '<a href="{{ route("admin.berita.create") }}" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Tambah Berita</a>';
+        headerActions.innerHTML = '<button type="button" class="btn btn-primary" onclick="alert(\'Fitur tambah berita akan segera hadir\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Tambah Berita</button>';
     } else {
         headerActions.innerHTML = '';
     }

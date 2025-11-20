@@ -242,5 +242,51 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('petugas', PetugasController::class)
             ->names('petugas')
             ->middleware('can:manage-users');
+            
+        // Berita Management (using API controller for now, can be extended later)
+        Route::get('/berita', function () {
+            return redirect()->route('admin.dashboard')->with('info', 'Gunakan tab Berita di dashboard untuk mengelola berita.');
+        })->name('berita.index');
+        
+        Route::get('/berita/create', function () {
+            return redirect()->route('admin.dashboard')->with('info', 'Fitur tambah berita akan segera hadir.');
+        })->name('berita.create');
+        
+        Route::get('/berita/{id}/edit', function ($id) {
+            return redirect()->route('admin.dashboard')->with('info', 'Fitur edit berita akan segera hadir.');
+        })->name('berita.edit');
+        
+        Route::delete('/berita/{id}', function ($id) {
+            try {
+                $berita = \App\Models\Berita::findOrFail($id);
+                $berita->delete();
+                return redirect()->route('admin.dashboard')->with('success', 'Berita berhasil dihapus.');
+            } catch (\Exception $e) {
+                return redirect()->route('admin.dashboard')->with('error', 'Gagal menghapus berita: ' . $e->getMessage());
+            }
+        })->name('berita.destroy');
+
+        // Agenda Management (using API controller for now, can be extended later)
+        Route::get('/agenda', function () {
+            return redirect()->route('admin.dashboard')->with('info', 'Gunakan tab Agenda di dashboard untuk mengelola agenda.');
+        })->name('agenda.index');
+        
+        Route::get('/agenda/create', function () {
+            return redirect()->route('admin.dashboard')->with('info', 'Fitur tambah agenda akan segera hadir.');
+        })->name('agenda.create');
+        
+        Route::get('/agenda/{id}/edit', function ($id) {
+            return redirect()->route('admin.dashboard')->with('info', 'Fitur edit agenda akan segera hadir.');
+        })->name('agenda.edit');
+        
+        Route::delete('/agenda/{id}', function ($id) {
+            try {
+                $agenda = \App\Models\Agenda::findOrFail($id);
+                $agenda->delete();
+                return redirect()->route('admin.dashboard')->with('success', 'Agenda berhasil dihapus.');
+            } catch (\Exception $e) {
+                return redirect()->route('admin.dashboard')->with('error', 'Gagal menghapus agenda: ' . $e->getMessage());
+            }
+        })->name('agenda.destroy');
     });
 });
