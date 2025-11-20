@@ -104,7 +104,7 @@
 
             <div class="comments" style="padding:8px 12px 16px">
                 <form id="commentForm" onsubmit="sendComment(event)" style="display:flex; gap:8px; margin-bottom:12px">
-                    <input type="text" id="commentInput" placeholder="Tulis komentar..." style="flex:1" required>
+                    <input type="text" id="commentInput" placeholder="Tulis komentar..." style="flex:1; color:#000" required>
                     <button type="submit" id="commentSubmitBtn" class="btn-send" aria-label="Kirim komentar">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <line x1="22" y1="2" x2="11" y2="13"/>
@@ -113,7 +113,7 @@
                     </button>
                 </form>
                 <div class="comment-list" id="commentList" style="display:grid; gap:8px">
-                    <div style="opacity:.7">Memuat komentar...</div>
+                    <div style="opacity:.7; color:#000">Memuat komentar...</div>
                 </div>
             </div>
         </div>
@@ -396,12 +396,12 @@
     function updateCommentsUI() {
         const list = document.getElementById('commentList');
         if (comments.length === 0) {
-            list.innerHTML = '<div style="opacity:.7">Belum ada komentar.</div>';
+            list.innerHTML = '<div style="opacity:.7; color:#000">Belum ada komentar.</div>';
         } else {
             list.innerHTML = comments.map(c => `
-                <div class="comment-item" style="border:1px solid #eee; border-radius:8px; padding:8px">
-                    <div style="font-weight:600; font-size:13px">${c.user?.name || 'Anonim'}</div>
-                    <div style="font-size:14px">${c.body || ''}</div>
+                <div class="comment-item" style="border:1px solid #eee; border-radius:8px; padding:8px; background:#fff">
+                    <div style="font-weight:600; font-size:13px; color:#000; margin-bottom:4px">${c.user?.name || 'Anonim'}</div>
+                    <div style="font-size:14px; color:#000; line-height:1.5">${c.body || ''}</div>
                 </div>
             `).join('');
         }
