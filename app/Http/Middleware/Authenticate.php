@@ -11,25 +11,13 @@ class Authenticate extends Middleware
      * Get the path the user should be redirected to when they are not authenticated.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  array  $guards
      * @return string|null
      */
-    protected function redirectTo($request, ...$guards)
+    protected function redirectTo($request)
     {
         if (! $request->expectsJson()) {
-            // Check guards passed to middleware (e.g., auth:petugas)
-            if (!empty($guards)) {
-                foreach ($guards as $guard) {
-                    if ($guard === 'petugas') {
-                        return route('admin.login');
-                    }
-                    if ($guard === 'web') {
-                        return route('user.login');
-                    }
-                }
-            }
-            
             // Check if request is for admin area using Laravel's is() method
+            // This is the most reliable way to detect admin routes
             if ($request->is('admin') || $request->is('admin/*')) {
                 return route('admin.login');
             }
@@ -51,7 +39,20 @@ class Authenticate extends Middleware
                 }
             }
             
-            // Default fallback to user login
+            // Check route middleware to detect guard
+            if ($route) {
+                $middleware = $route->middleware();
+                foreach ($middleware as $mw) {
+                    if (strpos($mw, 'auth:petugas') !== false) {
+                        return route('admin.login');
+                    }
+                    if (strpos($mw, 'auth:web') !== false) {
+                        return route('user.login');
+                    }
+                }
+            }
+            
+            // Default fallback to user login (never use 'login' route)
             return route('user.login');
         }
     }
