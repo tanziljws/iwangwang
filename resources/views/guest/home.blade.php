@@ -199,7 +199,10 @@
                     @php
                         $dateObj = \Carbon\Carbon::parse($event->date);
                         $dayLabel = $dateObj->format('d');
-                        $monthLabel = $dateObj->format('M Y'); // Format: "Jan 2025"
+                        // Format bulan seperti frontend: "Jan 2025" (short month + year)
+                        $monthLabel = $dateObj->format('M Y');
+                        // Format full date untuk footer: "15 Januari 2025"
+                        $fullDate = $dateObj->format('d F Y');
                     @endphp
                     <div class="agenda-card agenda-card-flat">
                         <div class="agenda-date agenda-date-pill">
@@ -218,7 +221,7 @@
                             </div>
                             <p class="agenda-description-home">{{ $event->description ?? '-' }}</p>
                             <div class="agenda-footer-meta">
-                                <i class="fas fa-calendar-alt"></i> {{ $dateObj->format('d F Y') }}
+                                <i class="fas fa-calendar-alt"></i> {{ $fullDate }}
                             </div>
                         </div>
                     </div>
