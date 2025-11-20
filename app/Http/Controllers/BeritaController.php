@@ -51,13 +51,14 @@ class BeritaController extends Controller
             ->with('success', 'Berita berhasil ditambahkan!');
     }
 
-    public function edit(Berita $berita)
+    public function edit($id)
     {
+        $berita = Berita::findOrFail($id);
         $petugas = auth()->guard('petugas')->user();
         return view('admin.berita.edit', compact('berita', 'petugas'));
     }
 
-    public function update(Request $request, Berita $berita)
+    public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -70,6 +71,7 @@ class BeritaController extends Controller
             'cover_image' => 'nullable|image|max:10240',
         ]);
 
+        $berita = Berita::findOrFail($id);
         $validated['slug'] = Str::slug($validated['title']);
 
         if ($request->hasFile('cover_image')) {
@@ -90,8 +92,9 @@ class BeritaController extends Controller
             ->with('success', 'Berita berhasil diperbarui!');
     }
 
-    public function destroy(Berita $berita)
+    public function destroy($id)
     {
+        $berita = Berita::findOrFail($id);
         // Delete cover image if exists
         if ($berita->cover_image && Storage::disk('public')->exists('berita/' . $berita->cover_image)) {
             Storage::disk('public')->delete('berita/' . $berita->cover_image);

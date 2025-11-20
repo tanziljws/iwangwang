@@ -36,14 +36,16 @@ class AgendaController extends Controller
             ->with('success', 'Agenda berhasil ditambahkan!');
     }
 
-    public function edit(Agenda $agenda)
+    public function edit($id)
     {
+        $agenda = Agenda::findOrFail($id);
         $petugas = auth()->guard('petugas')->user();
         return view('admin.agenda.edit', compact('agenda', 'petugas'));
     }
 
-    public function update(Request $request, Agenda $agenda)
+    public function update(Request $request, $id)
     {
+        $agenda = Agenda::findOrFail($id);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -58,8 +60,9 @@ class AgendaController extends Controller
             ->with('success', 'Agenda berhasil diperbarui!');
     }
 
-    public function destroy(Agenda $agenda)
+    public function destroy($id)
     {
+        $agenda = Agenda::findOrFail($id);
         $agenda->delete();
         return redirect()->route('admin.dashboard')
             ->with('success', 'Agenda berhasil dihapus!');
