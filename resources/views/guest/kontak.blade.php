@@ -3,8 +3,8 @@
 @section('title', 'Kontak - SMK NEGERI 4 KOTA BOGOR')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/Contact.css') }}">
-<link rel="stylesheet" href="{{ asset('css/Home.css') }}">
+<link rel="stylesheet" href="{{ secure_asset('css/Contact.css') }}">
+<link rel="stylesheet" href="{{ secure_asset('css/Home.css') }}">
 @endpush
 
 @section('content')

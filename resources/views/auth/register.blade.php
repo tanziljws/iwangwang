@@ -3,7 +3,7 @@
 @section('title', 'Daftar - SMK NEGERI 4 KOTA BOGOR')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/Auth.css') }}">
+<link rel="stylesheet" href="{{ secure_asset('css/Auth.css') }}">
 @endpush
 
 @section('content')
@@ -13,7 +13,7 @@
         <div class="auth-split">
             <div class="auth-split-left">
                 <div class="auth-logo-img">
-                    <img src="{{ asset('images/smkn4.jpg') }}" alt="Logo SMKN 4">
+                    <img src="{{ secure_asset('images/smkn4.jpg') }}" alt="Logo SMKN 4">
                 </div>
                 <div class="auth-brand">SMKN 4 KOTA BOGOR</div>
                 <div class="auth-welcome-text">

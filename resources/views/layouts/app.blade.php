@@ -13,9 +13,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Styles -->
-    <link rel="stylesheet" href="{{ asset('css/Home.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/Navbar.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/TopBar.css') }}">
+    <link rel="stylesheet" href="{{ secure_secure_asset('css/Home.css') }}">
+    <link rel="stylesheet" href="{{ secure_secure_asset('css/Navbar.css') }}">
+    <link rel="stylesheet" href="{{ secure_secure_asset('css/TopBar.css') }}">
     @stack('styles')
 </head>
 <body>
@@ -39,7 +39,7 @@
         <div class="navbar-container">
             <div class="logo">
                 <a href="{{ route('home') }}" class="logo-container">
-                    <img src="{{ asset('images/smkn4.jpg') }}" alt="Logo SMKN 4" class="navbar-logo">
+                    <img src="{{ secure_secure_asset('images/smkn4.jpg') }}" alt="Logo SMKN 4" class="navbar-logo">
                     <div>
                         <span>SMK</span> NEGERI 4 KOTA BOGOR
                     </div>

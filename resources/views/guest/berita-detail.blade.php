@@ -3,7 +3,7 @@
 @section('title', $berita->title . ' - SMK NEGERI 4 KOTA BOGOR')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/Berita.css') }}">
+<link rel="stylesheet" href="{{ secure_asset('css/Berita.css') }}">
 @endpush
 
 @section('content')

@@ -3,7 +3,7 @@
 @section('title', 'Akun Saya - SMK NEGERI 4 KOTA BOGOR')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/Account.css') }}">
+<link rel="stylesheet" href="{{ secure_asset('css/Account.css') }}">
 @endpush
 
 @section('content')

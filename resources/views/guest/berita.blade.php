@@ -3,7 +3,7 @@
 @section('title', 'Berita - SMK NEGERI 4 KOTA BOGOR')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/Berita.css') }}">
+<link rel="stylesheet" href="{{ secure_asset('css/Berita.css') }}">
 @endpush
 
 @section('content')
@@ -28,7 +28,7 @@
             @forelse($berita as $news)
                 <article class="berita-card">
                     <div class="berita-image">
-                        <img src="{{ $news->cover_image_url ?? asset('images/placeholder.jpg') }}" alt="{{ $news->title }}">
+                        <img src="{{ $news->cover_image_url ?? secure_asset('images/placeholder.jpg') }}" alt="{{ $news->title }}">
                         @if($news->category)
                             <div class="berita-category">{{ $news->category }}</div>
                         @endif
