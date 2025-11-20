@@ -12,22 +12,63 @@ use App\Http\Controllers\Api\GaleriApiController;
 use App\Http\Controllers\UserAuthController;
 
 // Proxy storage files to bypass Apache 403 on symlink
+// This route must be early and without middleware to allow public access
 Route::get('/storage/{path}', function ($path) {
-    $full = storage_path('app/public/' . $path);
-    if (!file_exists($full)) {
-        abort(404, 'File not found');
+    // Decode URL-encoded path
+    $path = urldecode($path);
+    
+    // Security: prevent directory traversal
+    if (strpos($path, '..') !== false) {
+        abort(403, 'Invalid path');
     }
-    return response()->file($full);
-})->where('path', '.*');
+    
+    // Try multiple possible locations
+    $possiblePaths = [
+        storage_path('app/public/' . $path),
+        storage_path('app/public/foto/' . $path),
+        storage_path('app/public/berita/' . $path),
+        storage_path('app/public/agenda/' . $path),
+    ];
+    
+    foreach ($possiblePaths as $full) {
+        if (file_exists($full) && is_file($full)) {
+            return response()->file($full, [
+                'Content-Type' => mime_content_type($full) ?: 'image/jpeg',
+            ]);
+        }
+    }
+    
+    abort(404, 'File not found');
+})->where('path', '.*')->middleware([]);
 
 // Alternate media route to fully bypass any web server alias restrictions
 Route::get('/media/{path}', function ($path) {
-    $full = storage_path('app/public/' . $path);
-    if (!file_exists($full)) {
-        abort(404, 'File not found');
+    // Decode URL-encoded path
+    $path = urldecode($path);
+    
+    // Security: prevent directory traversal
+    if (strpos($path, '..') !== false) {
+        abort(403, 'Invalid path');
     }
-    return response()->file($full);
-})->where('path', '.*');
+    
+    // Try multiple possible locations
+    $possiblePaths = [
+        storage_path('app/public/' . $path),
+        storage_path('app/public/foto/' . $path),
+        storage_path('app/public/berita/' . $path),
+        storage_path('app/public/agenda/' . $path),
+    ];
+    
+    foreach ($possiblePaths as $full) {
+        if (file_exists($full) && is_file($full)) {
+            return response()->file($full, [
+                'Content-Type' => mime_content_type($full) ?: 'image/jpeg',
+            ]);
+        }
+    }
+    
+    abort(404, 'File not found');
+})->where('path', '.*')->middleware([]);
 
 /*
 |--------------------------------------------------------------------------
