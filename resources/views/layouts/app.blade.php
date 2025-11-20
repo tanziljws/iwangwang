@@ -55,7 +55,7 @@
         <div class="navbar-container">
             <div class="logo">
                 <a href="{{ route('home') }}" class="logo-container">
-                    <img src="{{ secure_asset('images/smk4.png') }}" alt="Logo SMKN 4" class="navbar-logo" onerror="this.src='{{ secure_asset('images/smkn.jpg') }}'; this.onerror=null;">
+                    <img src="{{ secure_asset('images/smkn4.jpg') }}" alt="Logo SMKN 4" class="navbar-logo">
                     <div>
                         <span>SMK</span> NEGERI 4 KOTA BOGOR
                     </div>
