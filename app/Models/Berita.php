@@ -59,18 +59,15 @@ class Berita extends Model
             return $this->cover_image;
         }
 
-        // Get base URL from request or config
-        $baseUrl = $this->getBaseUrl();
-        
+        // Always use asset() helper for absolute path with leading slash
         // Handle both 'berita/filename.jpg' and just 'filename.jpg'
         $filename = basename($this->cover_image);
-        $path = 'storage/berita/' . $filename;
         
         if (strpos($this->cover_image, 'berita/') === 0) {
-            $path = 'storage/' . $this->cover_image;
+            return asset('storage/' . $this->cover_image);
         }
         
-        return $baseUrl . '/' . ltrim($path, '/');
+        return asset('storage/berita/' . $filename);
     }
     
     /**
