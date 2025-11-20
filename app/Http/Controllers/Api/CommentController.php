@@ -31,8 +31,18 @@ class CommentController extends Controller
             'body' => 'required|string|max:2000',
         ]);
 
+        // Support both Sanctum token and session-based auth
+        $user = $request->user();
+        if (!$user) {
+            // Try to get user from session
+            $user = auth('web')->user();
+        }
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
         $data = [
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'foto_id' => $foto->id,
             'body' => $validated['body'],
         ];
@@ -49,7 +59,12 @@ class CommentController extends Controller
 
     public function destroy(Comment $comment, Request $request)
     {
-        if ($comment->user_id !== $request->user()->id) {
+        // Support both Sanctum token and session-based auth
+        $user = $request->user();
+        if (!$user) {
+            $user = auth('web')->user();
+        }
+        if (!$user || $comment->user_id !== $user->id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
         $comment->delete();

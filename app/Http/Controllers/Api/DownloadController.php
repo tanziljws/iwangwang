@@ -15,9 +15,14 @@ class DownloadController extends Controller
     {
         // catat download (jangan sampai error DB membuat download gagal)
         try {
-            if ($request->user()) {
+            // Support both Sanctum token and session-based auth
+            $user = $request->user();
+            if (!$user) {
+                $user = auth('web')->user();
+            }
+            if ($user) {
                 Download::create([
-                    'user_id' => $request->user()->id,
+                    'user_id' => $user->id,
                     'foto_id' => $foto->id,
                     'ip_address' => $request->ip(),
                     'user_agent' => $request->userAgent(),

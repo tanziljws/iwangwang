@@ -11,7 +11,16 @@ class LikeController extends Controller
 {
     public function toggle(Request $request, Foto $foto)
     {
-        $userId = $request->user()->id;
+        // Support both Sanctum token and session-based auth
+        $user = $request->user();
+        if (!$user) {
+            // Try to get user from session
+            $user = auth('web')->user();
+        }
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        $userId = $user->id;
 
         $like = Like::where('user_id', $userId)
             ->where('foto_id', $foto->id)

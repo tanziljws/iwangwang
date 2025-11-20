@@ -131,6 +131,8 @@
 
 @push('scripts')
 <script>
+    // Use web routes for session-based auth, fallback to API routes for token-based auth
+    const WEB_BASE = '{{ url("/user") }}';
     const API_BASE = '{{ url("/api") }}';
     let selectedPhoto = null;
     let likeCount = 0;
@@ -139,30 +141,63 @@
     let comments = [];
     let commentBusy = false;
 
-    // Get auth token from cookie or localStorage
-    function getAuthToken() {
-        // Try to get from cookie first (Laravel session)
+    // Get CSRF token from meta tag
+    function getCsrfToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '';
+    }
+
+    // Check if user is logged in via session
+    function isLoggedInViaSession() {
+        // Check if user is logged in via Laravel session
+        // We'll check by making a simple request or checking cookie
         const cookies = document.cookie.split(';');
         for (let cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'laravel_session') {
-                // Laravel session token, but we need Bearer token
-                // Check if user is logged in via session
-                return null; // For now, we'll use API token from localStorage
+            const [name] = cookie.trim().split('=');
+            if (name === 'laravel_session' || name === 'XSRF-TOKEN') {
+                return true; // Session cookie exists
             }
         }
-        // Fallback to localStorage (for API token)
-        return localStorage.getItem('userToken');
+        return false;
+    }
+
+    // Check if user has API token
+    function hasApiToken() {
+        return !!localStorage.getItem('userToken');
+    }
+
+    // Determine which base URL to use
+    function getBaseUrl() {
+        // If logged in via session (Blade login), use web routes
+        // If logged in via token (API login), use API routes
+        if (isLoggedInViaSession()) {
+            return WEB_BASE;
+        } else if (hasApiToken()) {
+            return API_BASE;
+        }
+        // Default to web routes for session-based auth
+        return WEB_BASE;
     }
 
     function getAuthHeaders() {
-        const token = getAuthToken();
-        return token ? { 'Authorization': `Bearer ${token}` } : {};
+        const headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+        
+        // If user has API token, add it (for API routes)
+        const token = localStorage.getItem('userToken');
+        if (token && !isLoggedInViaSession()) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return headers;
     }
 
     function requireLogin() {
-        const token = getAuthToken();
-        if (!token) {
+        if (!isLoggedInViaSession() && !hasApiToken()) {
             alert('Silakan login terlebih dahulu untuk melakukan aksi ini.');
             window.location.href = '{{ route("user.login") }}';
             return false;
@@ -234,8 +269,10 @@
     async function loadLikes() {
         if (!selectedPhoto) return;
         try {
-            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/likes/count`, {
-                headers: { 'Accept': 'application/json', ...getAuthHeaders() }
+            const baseUrl = getBaseUrl();
+            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/likes/count`, {
+                headers: { 'Accept': 'application/json', ...getAuthHeaders() },
+                credentials: 'same-origin' // Include cookies for session
             });
             if (res.ok) {
                 const data = await res.json();
@@ -259,9 +296,11 @@
         btn.disabled = true;
         
         try {
-            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/like`, {
+            const baseUrl = getBaseUrl();
+            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/like`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...getAuthHeaders() }
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...getAuthHeaders() },
+                credentials: 'same-origin' // Include cookies for session
             });
             const data = await res.json();
             if (res.ok) {
@@ -308,8 +347,10 @@
     async function loadComments() {
         if (!selectedPhoto) return;
         try {
-            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/comments`, {
-                headers: { 'Accept': 'application/json', ...getAuthHeaders() }
+            const baseUrl = getBaseUrl();
+            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/comments`, {
+                headers: { 'Accept': 'application/json', ...getAuthHeaders() },
+                credentials: 'same-origin' // Include cookies for session
             });
             if (res.ok) {
                 const data = await res.json();
@@ -338,10 +379,12 @@
         btn.innerHTML = '...';
         
         try {
-            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/comments`, {
+            const baseUrl = getBaseUrl();
+            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/comments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...getAuthHeaders() },
-                body: JSON.stringify({ body: text })
+                body: JSON.stringify({ body: text }),
+                credentials: 'same-origin' // Include cookies for session
             });
             const data = await res.json();
             if (res.ok) {
@@ -391,8 +434,10 @@
     async function downloadPhoto() {
         if (!selectedPhoto || !requireLogin()) return;
         try {
-            const res = await fetch(`${API_BASE}/foto/${selectedPhoto.id}/download`, {
-                headers: { ...getAuthHeaders() }
+            const baseUrl = getBaseUrl();
+            const res = await fetch(`${baseUrl}/foto/${selectedPhoto.id}/download`, {
+                headers: { ...getAuthHeaders() },
+                credentials: 'same-origin' // Include cookies for session
             });
             if (!res.ok) {
                 const data = await res.json();
