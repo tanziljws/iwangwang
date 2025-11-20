@@ -16,38 +16,29 @@ class Authenticate extends Middleware
     protected function redirectTo($request)
     {
         if (! $request->expectsJson()) {
-            // Check the route path to determine which guard/login to use
-            $path = $request->path();
-            
-            // If accessing admin routes, redirect to admin login
-            if (str_starts_with($path, 'admin')) {
+            // Check if request is for admin area using Laravel's is() method
+            if ($request->is('admin') || $request->is('admin/*')) {
                 return route('admin.login');
             }
             
-            // For user routes or default, redirect to user login
-            if (str_starts_with($path, 'user')) {
+            // Check if request is for user area
+            if ($request->is('user') || $request->is('user/*')) {
                 return route('user.login');
             }
             
-            // Try to detect guard from authenticated guards
-            $guards = ['petugas', 'web'];
-            foreach ($guards as $guard) {
-                if (Auth::guard($guard)->check()) {
-                    if ($guard === 'petugas') {
-                        return route('admin.login');
-                    }
-                    if ($guard === 'web') {
-                        return route('user.login');
-                    }
+            // Check route name if available
+            $route = $request->route();
+            if ($route) {
+                $routeName = $route->getName();
+                if ($routeName && strpos($routeName, 'admin.') === 0) {
+                    return route('admin.login');
+                }
+                if ($routeName && strpos($routeName, 'user.') === 0) {
+                    return route('user.login');
                 }
             }
             
-            // Default fallback: check if request is for admin area
-            if (str_starts_with($path, 'admin')) {
-                return route('admin.login');
-            }
-            
-            // Default to user login
+            // Default fallback to user login
             return route('user.login');
         }
     }
