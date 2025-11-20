@@ -16,45 +16,49 @@ class Authenticate extends Middleware
     protected function redirectTo($request)
     {
         if (! $request->expectsJson()) {
-            // Check if request is for admin area using Laravel's is() method
-            // This is the most reliable way to detect admin routes
-            if ($request->is('admin') || $request->is('admin/*')) {
-                return route('admin.login');
-            }
-            
-            // Check if request is for user area
-            if ($request->is('user') || $request->is('user/*')) {
-                return route('user.login');
-            }
-            
-            // Check route name if available
+            // Priority 1: Check route name first (most reliable)
             $route = $request->route();
             if ($route) {
                 $routeName = $route->getName();
-                if ($routeName && strpos($routeName, 'admin.') === 0) {
-                    return route('admin.login');
+                if ($routeName) {
+                    // If route name starts with 'admin.', redirect to admin login
+                    if (strpos($routeName, 'admin.') === 0) {
+                        return route('admin.login');
+                    }
+                    // If route name starts with 'user.', redirect to user login
+                    if (strpos($routeName, 'user.') === 0) {
+                        return route('user.login');
+                    }
                 }
-                if ($routeName && strpos($routeName, 'user.') === 0) {
-                    return route('user.login');
-                }
-            }
-            
-            // Check route middleware to detect guard
-            if ($route) {
+                
+                // Priority 2: Check route middleware to detect guard
                 $middleware = $route->middleware();
                 if (is_array($middleware)) {
                     foreach ($middleware as $mw) {
-                        if (is_string($mw) && (strpos($mw, 'auth:petugas') !== false || strpos($mw, 'petugas') !== false)) {
-                            return route('admin.login');
-                        }
-                        if (is_string($mw) && (strpos($mw, 'auth:web') !== false)) {
-                            return route('user.login');
+                        if (is_string($mw)) {
+                            if (strpos($mw, 'auth:petugas') !== false || strpos($mw, 'petugas') !== false) {
+                                return route('admin.login');
+                            }
+                            if (strpos($mw, 'auth:web') !== false) {
+                                return route('user.login');
+                            }
                         }
                     }
                 }
             }
             
-            // Default fallback to user login (never use 'login' route)
+            // Priority 3: Check if request path is for admin area
+            $path = $request->path();
+            if ($path === 'admin' || strpos($path, 'admin/') === 0) {
+                return route('admin.login');
+            }
+            
+            // Priority 4: Check if request path is for user area
+            if ($path === 'user' || strpos($path, 'user/') === 0) {
+                return route('user.login');
+            }
+            
+            // Default fallback to user login (NEVER use 'login' route)
             return route('user.login');
         }
     }
