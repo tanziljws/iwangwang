@@ -68,7 +68,7 @@ class Foto extends Model
     public function getFileUrlAttribute()
     {
         if (empty($this->file)) {
-            return url('/images/placeholder.jpg');
+            return asset('images/placeholder.jpg');
         }
         
         // If it's already a full URL
@@ -76,19 +76,19 @@ class Foto extends Model
             return $this->file;
         }
         
-        // Always use absolute path with leading slash
+        // Always use asset() helper for absolute path with leading slash
         // Try storage/foto/ first (most common)
         if (Storage::disk('public')->exists('foto/' . $this->file)) {
-            return url('/storage/foto/' . $this->file);
+            return asset('storage/foto/' . $this->file);
         }
         
         // Try storage/ directly
         if (Storage::disk('public')->exists($this->file)) {
-            return url('/storage/' . $this->file);
+            return asset('storage/' . $this->file);
         }
         
-        // Try media/foto/ route (for Railway)
-        return url('/media/foto/' . $this->file);
+        // Fallback - return URL even if file doesn't exist (for Railway)
+        return asset('storage/foto/' . $this->file);
     }
     
     /**
