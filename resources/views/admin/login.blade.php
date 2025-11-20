@@ -87,11 +87,6 @@
                         <label for="remember" style="font-size:.9rem; color:#64748b;">Ingat saya</label>
                     </div>
                     <button type="submit" class="auth-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; font-weight: 600;">Masuk sebagai Admin</button>
-                    @if(config('auth.registration_enabled', true))
-                    <div style="text-align:center; font-size:.9rem; color:#64748b;">
-                        Belum punya akun admin? <a href="{{ route('admin.register') }}" class="auth-link" style="color: #667eea;">Daftar</a>
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>
