@@ -1,166 +1,174 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Foto - Admin</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #1f2937;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px;
-        }
-        .header {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header h1 {
-            font-size: 24px;
-            font-weight: 700;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-        }
-        .btn:hover { background: #5568d3; }
-        .btn-secondary { background: #6b7280; }
-        .btn-secondary:hover { background: #4b5563; }
-        .btn-danger { background: #ef4444; }
-        .btn-danger:hover { background: #dc2626; }
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        .photo-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .photo-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        .photo-card-body {
-            padding: 16px;
-        }
-        .photo-card-title {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #111827;
-        }
-        .photo-card-meta {
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 12px;
-        }
-        .photo-card-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-        }
-        .alert-success {
-            background: #d1fae5;
-            color: #059669;
-            border-left: 4px solid #059669;
-        }
-        .alert-error {
-            background: #fee2e2;
-            color: #ef4444;
-            border-left: 4px solid #ef4444;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 48px;
-            background: white;
-            border-radius: 12px;
-            color: #9ca3af;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Kelola Foto</h1>
-            <div>
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">← Dashboard</a>
-                <a href="{{ route('admin.foto.create') }}" class="btn">+ Tambah Foto</a>
+@extends('layouts.app')
+
+@section('title', 'Kelola Foto - Admin')
+
+@push('styles')
+<link rel="stylesheet" href="{{ secure_asset('css/Dashboard.css') }}">
+@endpush
+
+@section('content')
+<div class="dashboard">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <img src="{{ secure_asset('images/smkn4.jpg') }}" alt="SMKN 4" class="sidebar-logo-img">
+                <h2>GALERI SMKN4</h2>
             </div>
         </div>
+        <div class="sidebar-stats">
+            <div class="sidebar-stat-card">
+                <span class="sidebar-stat-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="sidebar-stat-icon">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Halo, {{ $petugas->nama_petugas }} <span class="wave" aria-hidden="true">👋</span>
+                </span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ route('admin.dashboard') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span class="nav-text">Statistik</span>
+            </a>
+            <a href="{{ route('admin.kategori.index') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                <span class="nav-text">Kategori</span>
+            </a>
+            <a href="{{ route('admin.galeri.index') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span class="nav-text">Galeri</span>
+            </a>
+            <a href="{{ route('admin.dashboard') }}" class="nav-item" onclick="event.preventDefault(); setActiveTab('berita');">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+                    <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
+                </svg>
+                <span class="nav-text">Berita</span>
+            </a>
+            <a href="{{ route('admin.dashboard') }}" class="nav-item" onclick="event.preventDefault(); setActiveTab('agenda');">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span class="nav-text">Agenda</span>
+            </a>
+            <a href="{{ route('admin.user.index') }}" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span class="nav-text">Kelola User</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <form method="POST" action="{{ route('admin.logout') }}" style="display: block; width: 100%;">
+                @csrf
+                <button type="submit" class="btn btn-logout" style="width: 100%;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Keluar</span>
+                </button>
+            </form>
+        </div>
+    </aside>
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-error">{{ session('error') }}</div>
-        @endif
-
-        @if($fotos->count() > 0)
-        <div class="photo-grid">
-            @foreach($fotos as $foto)
-            <div class="photo-card">
-                @if($foto->file_url)
-                <img src="{{ $foto->file_url }}" alt="{{ $foto->judul }}">
-                @else
-                <div style="width: 100%; height: 200px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
-                    No Image
+    <main class="dashboard-content">
+        <div class="content-wrapper">
+            <div class="content-header">
+                <div class="header-title">
+                    <h1 class="text-2xl font-bold text-gray-800">Kelola Foto</h1>
+                    <p class="text-sm text-gray-500">Manajemen foto-foto dalam galeri</p>
                 </div>
+                <div class="header-actions">
+                    <a href="{{ route('admin.foto.create') }}" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Tambah Foto
+                    </a>
+                </div>
+            </div>
+
+            <div class="content-body">
+                @if(session('success'))
+                    <div style="background: #d1fae5; color: #059669; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #059669;">
+                        {{ session('success') }}
+                    </div>
                 @endif
-                <div class="photo-card-body">
-                    <div class="photo-card-title">{{ $foto->judul ?? 'Foto ' . $foto->id }}</div>
-                    <div class="photo-card-meta">
-                        @if($foto->galeri)
-                        Galeri: {{ $foto->galeri->nama ?? 'N/A' }}
-                        @if($foto->galeri->kategori)
-                        • {{ $foto->galeri->kategori->nama }}
-                        @endif
-                        @endif
+
+                @if(session('error'))
+                    <div style="background: #fee2e2; color: #ef4444; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #ef4444;">
+                        {{ session('error') }}
                     </div>
-                    <div class="photo-card-actions">
-                        <a href="{{ route('admin.foto.edit', $foto) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; flex: 1;">Edit</a>
-                        <form method="POST" action="{{ route('admin.foto.destroy', $foto) }}" style="display: inline; flex: 1;" onsubmit="return confirm('Yakin hapus foto ini?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px; width: 100%;">Hapus</button>
-                        </form>
-                    </div>
+                @endif
+
+                <div class="gallery-grid">
+                    @if($fotos->count() > 0)
+                        @foreach($fotos as $foto)
+                            <div class="gallery-card">
+                                <div class="card-image-container">
+                                    <img src="{{ $foto->file_url }}" alt="{{ $foto->alt_text ?? $foto->judul }}" class="card-image" loading="lazy">
+                                    <div class="card-overlay">
+                                        <div class="card-actions">
+                                            <a href="{{ route('admin.foto.edit', $foto->id) }}" class="btn-icon btn-edit" title="Edit">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                </svg>
+                                            </a>
+                                            <form action="{{ route('admin.foto.destroy', $foto->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus foto ini?');" style="display:inline-block;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn-icon btn-delete" title="Hapus">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <h3 class="card-title">{{ $foto->judul }}</h3>
+                                    <span class="date">
+                                        <i class="far fa-calendar-alt"></i> {{ $foto->created_at->format('d F Y') }}
+                                    </span>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="empty-icon">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            <h3>Belum ada foto</h3>
+                            <p>Tambahkan foto baru ke galeri Anda.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
-            @endforeach
         </div>
-        @else
-        <div class="empty-state">
-            <p>Belum ada foto. <a href="{{ route('admin.foto.create') }}" style="color: #667eea;">Tambah foto baru</a></p>
-        </div>
-        @endif
-    </div>
-</body>
-</html>
-
+    </main>
+</div>
+@endsection
