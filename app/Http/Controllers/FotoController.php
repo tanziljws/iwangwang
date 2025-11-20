@@ -181,7 +181,12 @@ class FotoController extends Controller
         
         $foto->delete();
         
-        return response()->json(['success' => 'Foto berhasil dihapus.']);
+        if (request()->wantsJson() || request()->is('api/*')) {
+            return response()->json(['success' => 'Foto berhasil dihapus.']);
+        }
+
+        return redirect()->route('admin.dashboard')
+            ->with('success', 'Foto berhasil dihapus!');
     }
 
     public function toggleStatus(Foto $foto)

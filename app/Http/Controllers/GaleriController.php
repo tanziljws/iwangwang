@@ -121,7 +121,13 @@ class GaleriController extends Controller
 
         $galeri->delete();
 
-        return redirect()->route('admin.galeri.index')
+        if (request()->wantsJson() || request()->is('api/*')) {
+            return response()->json([
+                'message' => 'Galeri & foto berhasil dihapus!',
+            ], 200);
+        }
+
+        return redirect()->route('admin.dashboard')
             ->with('success', 'Galeri & foto berhasil dihapus!');
     }
 
