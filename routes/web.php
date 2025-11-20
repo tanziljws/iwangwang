@@ -14,61 +14,93 @@ use App\Http\Controllers\UserAuthController;
 // Proxy storage files to bypass Apache 403 on symlink
 // This route must be early and without middleware to allow public access
 Route::get('/storage/{path}', function ($path) {
-    // Decode URL-encoded path
-    $path = urldecode($path);
-    
-    // Security: prevent directory traversal
-    if (strpos($path, '..') !== false) {
-        abort(403, 'Invalid path');
-    }
-    
-    // Try multiple possible locations
-    $possiblePaths = [
-        storage_path('app/public/' . $path),
-        storage_path('app/public/foto/' . $path),
-        storage_path('app/public/berita/' . $path),
-        storage_path('app/public/agenda/' . $path),
-    ];
-    
-    foreach ($possiblePaths as $full) {
-        if (file_exists($full) && is_file($full)) {
-            return response()->file($full, [
-                'Content-Type' => mime_content_type($full) ?: 'image/jpeg',
-            ]);
+    try {
+        // Decode URL-encoded path
+        $path = urldecode($path);
+        
+        // Security: prevent directory traversal
+        if (strpos($path, '..') !== false || strpos($path, '/') === 0) {
+            abort(403, 'Invalid path');
         }
+        
+        // Try multiple possible locations
+        $possiblePaths = [
+            storage_path('app/public/foto/' . $path),
+            storage_path('app/public/' . $path),
+            storage_path('app/public/berita/' . $path),
+            storage_path('app/public/agenda/' . $path),
+        ];
+        
+        foreach ($possiblePaths as $full) {
+            if (file_exists($full) && is_file($full) && is_readable($full)) {
+                $mimeType = mime_content_type($full) ?: 'image/jpeg';
+                return response()->file($full, [
+                    'Content-Type' => $mimeType,
+                    'Cache-Control' => 'public, max-age=31536000',
+                ]);
+            }
+        }
+        
+        // Log for debugging
+        \Log::warning('Storage file not found', [
+            'path' => $path,
+            'tried_paths' => $possiblePaths
+        ]);
+        
+        abort(404, 'File not found: ' . $path);
+    } catch (\Exception $e) {
+        \Log::error('Storage route error', [
+            'path' => $path ?? 'unknown',
+            'error' => $e->getMessage()
+        ]);
+        abort(500, 'Error serving file');
     }
-    
-    abort(404, 'File not found');
-})->where('path', '.*')->middleware([]);
+})->where('path', '.*');
 
 // Alternate media route to fully bypass any web server alias restrictions
 Route::get('/media/{path}', function ($path) {
-    // Decode URL-encoded path
-    $path = urldecode($path);
-    
-    // Security: prevent directory traversal
-    if (strpos($path, '..') !== false) {
-        abort(403, 'Invalid path');
-    }
-    
-    // Try multiple possible locations
-    $possiblePaths = [
-        storage_path('app/public/' . $path),
-        storage_path('app/public/foto/' . $path),
-        storage_path('app/public/berita/' . $path),
-        storage_path('app/public/agenda/' . $path),
-    ];
-    
-    foreach ($possiblePaths as $full) {
-        if (file_exists($full) && is_file($full)) {
-            return response()->file($full, [
-                'Content-Type' => mime_content_type($full) ?: 'image/jpeg',
-            ]);
+    try {
+        // Decode URL-encoded path
+        $path = urldecode($path);
+        
+        // Security: prevent directory traversal
+        if (strpos($path, '..') !== false || strpos($path, '/') === 0) {
+            abort(403, 'Invalid path');
         }
+        
+        // Try multiple possible locations
+        $possiblePaths = [
+            storage_path('app/public/foto/' . $path),
+            storage_path('app/public/' . $path),
+            storage_path('app/public/berita/' . $path),
+            storage_path('app/public/agenda/' . $path),
+        ];
+        
+        foreach ($possiblePaths as $full) {
+            if (file_exists($full) && is_file($full) && is_readable($full)) {
+                $mimeType = mime_content_type($full) ?: 'image/jpeg';
+                return response()->file($full, [
+                    'Content-Type' => $mimeType,
+                    'Cache-Control' => 'public, max-age=31536000',
+                ]);
+            }
+        }
+        
+        // Log for debugging
+        \Log::warning('Media file not found', [
+            'path' => $path,
+            'tried_paths' => $possiblePaths
+        ]);
+        
+        abort(404, 'File not found: ' . $path);
+    } catch (\Exception $e) {
+        \Log::error('Media route error', [
+            'path' => $path ?? 'unknown',
+            'error' => $e->getMessage()
+        ]);
+        abort(500, 'Error serving file');
     }
-    
-    abort(404, 'File not found');
-})->where('path', '.*')->middleware([]);
+})->where('path', '.*');
 
 /*
 |--------------------------------------------------------------------------
