@@ -59,7 +59,11 @@ class Authenticate extends Middleware
             }
             
             // Default fallback to user login (NEVER use 'login' route)
+            // This ensures we never call route('login') which doesn't exist
             return route('user.login');
         }
+        
+        // Return null for JSON requests (no redirect)
+        return null;
     }
 }
