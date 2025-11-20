@@ -86,20 +86,6 @@ Route::get('/galeri', function (\Illuminate\Http\Request $request) {
     return app(\App\Http\Controllers\GuestController::class)->galeri();
 });
 Route::get('/galeri/{id}', [GaleriApiController::class, 'show'])->middleware('api');
-Route::get('/agenda', [GuestController::class, 'agenda'])->name('agenda');
-Route::get('/gallery', [GuestController::class, 'gallery'])->name('gallery');
-Route::get('/kontak', [GuestController::class, 'kontak'])->name('kontak');
-Route::get('/tentang', [GuestController::class, 'tentang'])->name('tentang');
-
-// ======================= Gallery API Routes (Session-based auth for Blade pages) =======================
-// These routes use session auth instead of Sanctum token, so Blade-logged users can use gallery features
-Route::middleware(['auth:web'])->prefix('api')->group(function () {
-    Route::post('/foto/{foto}/like', [\App\Http\Controllers\Api\LikeController::class, 'toggle']);
-    Route::get('/foto/{foto}/likes/count', [\App\Http\Controllers\Api\LikeController::class, 'count']);
-    Route::get('/foto/{foto}/comments', [\App\Http\Controllers\Api\CommentController::class, 'index']);
-    Route::post('/foto/{foto}/comments', [\App\Http\Controllers\Api\CommentController::class, 'store']);
-    Route::get('/foto/{foto}/download', [\App\Http\Controllers\Api\DownloadController::class, 'download']);
-});
 
 // ======================= User Auth Routes =======================
 Route::prefix('user')->name('user.')->group(function () {
